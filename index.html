@@ -29,6 +29,20 @@
 
   <h2>📚 My Flashcards</h2>
 
+  <h3>📁 My Folders</h3>
+
+  <input type="text" id="folder-name"
+         placeholder="New folder name">
+
+  <button onclick="addFolder()">Create Folder</button>
+
+  <p>
+    <label for="folder-select">Choose folder:</label>
+    <select id="folder-select" onchange="showFlashcards()"></select>
+  </p>
+
+  <h3>Add New Word</h3>
+
   <input type="text" id="english-word"
          placeholder="English word">
 
@@ -49,51 +63,130 @@
   <script>
     function showSkill(skill) {
       document.getElementById("skill-title").textContent = skill;
-
       document.getElementById("skill-description").textContent =
         "Welcome to your " + skill + " practice!";
     }
 
-    let flashcards = JSON.parse(
-  localStorage.getItem("lingoverse-flashcards") || "[]"
-);
+    const flashcards = JSON.parse(
+      localStorage.getItem("lingoverse-flashcards") || "[]"
+    );
 
-function showFlashcards() {
-  const list = document.getElementById("flashcard-list");
-  list.innerHTML = "";
+    let folders = JSON.parse(
+      localStorage.getItem("lingoverse-folders") || '["General"]'
+    );
 
-  flashcards.forEach(function(card) {
-    const item = document.createElement("p");
-    item.textContent = card.english + " — " + card.czech;
-    list.appendChild(item);
-  });
-}
+    // Keep the original folder for existing words.
+    if (!folders.includes("General")) {
+      folders.unshift("General");
+    }
 
-function addFlashcard() {
-  const english = document.getElementById("english-word").value.trim();
-  const czech = document.getElementById("czech-word").value.trim();
+    function saveFolders() {
+      localStorage.setItem(
+        "lingoverse-folders",
+        JSON.stringify(folders)
+      );
+    }
 
-  if (english === "" || czech === "") {
-    alert("Please fill in both fields!");
-    return;
-  }
+    function updateFolderSelect() {
+      const select = document.getElementById("folder-select");
+      const previous = select.value;
+      select.innerHTML = "";
 
-  flashcards.push({
-    english: english,
-    czech: czech
-  });
+      folders.forEach(function(folder) {
+        const option = document.createElement("option");
+        option.value = folder;
+        option.textContent = folder;
+        select.appendChild(option);
+      });
 
-  localStorage.setItem(
-    "lingoverse-flashcards",
-    JSON.stringify(flashcards)
-  );
+      if (folders.includes(previous)) {
+        select.value = previous;
+      }
+    }
 
-  showFlashcards();
+    function addFolder() {
+      const input = document.getElementById("folder-name");
+      const name = input.value.trim();
 
-  document.getElementById("english-word").value = "";
-  document.getElementById("czech-word").value = "";
-}
+      if (name === "") {
+        alert("Please enter a folder name!");
+        return;
+      }
 
+      if (folders.some(folder =>
+        folder.toLowerCase() === name.toLowerCase()
+      )) {
+        alert("This folder already exists!");
+        return;
+      }
+
+      folders.push(name);
+      saveFolders();
+      updateFolderSelect();
+
+      document.getElementById("folder-select").value = name;
+      input.value = "";
+      showFlashcards();
+    }
+
+    function showFlashcards() {
+      const list = document.getElementById("flashcard-list");
+      const selectedFolder =
+        document.getElementById("folder-select").value;
+
+      list.innerHTML = "";
+
+      const visibleCards = flashcards.filter(function(card) {
+        return (card.folder || "General") === selectedFolder;
+      });
+
+      if (visibleCards.length === 0) {
+        list.textContent = "No words in this folder yet.";
+        return;
+      }
+
+      visibleCards.forEach(function(card) {
+        const item = document.createElement("p");
+        item.textContent = card.english + " — " + card.czech;
+        list.appendChild(item);
+      });
+    }
+
+    function addFlashcard() {
+      const english =
+        document.getElementById("english-word").value.trim();
+
+      const czech =
+        document.getElementById("czech-word").value.trim();
+
+      const folder =
+        document.getElementById("folder-select").value;
+
+      if (english === "" || czech === "") {
+        alert("Please fill in both fields!");
+        return;
+      }
+
+      flashcards.push({
+        english: english,
+        czech: czech,
+        folder: folder
+      });
+
+      localStorage.setItem(
+        "lingoverse-flashcards",
+        JSON.stringify(flashcards)
+      );
+
+      showFlashcards();
+
+      document.getElementById("english-word").value = "";
+      document.getElementById("czech-word").value = "";
+    }
+
+    saveFolders();
+    updateFolderSelect();
+    showFlashcards();
   </script>
 
 </body>
