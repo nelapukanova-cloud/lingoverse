@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LingoVerse</title>
+
   <style>
     .study-card {
       width: 280px;
@@ -25,6 +26,23 @@
 
     .study-card:hover {
       background: #ede9fe;
+    }
+
+    .study-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .study-buttons button {
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    #study-results {
+      margin-top: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -71,7 +89,7 @@
   <hr>
 
   <h2>🃏 Study Flashcards</h2>
-  <p>Choose a folder above and click the card to reveal the translation.</p>
+  <p>Click the card to reveal the translation.</p>
 
   <div id="study-card" class="study-card"
        role="button" tabindex="0"
@@ -81,8 +99,23 @@
   </div>
 
   <p id="card-counter"></p>
-  <button onclick="previousCard()">⬅️ Previous</button>
-  <button onclick="nextCard()">Next ➡️</button>
+
+  <div class="study-buttons">
+    <button onclick="previousCard()">⬅️ Previous</button>
+    <button onclick="nextCard()">Next ➡️</button>
+  </div>
+
+  <h3>🧠 Learning Mode</h3>
+  <p>Reveal the translation, then choose how well you know the word.</p>
+
+  <div class="study-buttons">
+    <button onclick="markCard(true)">✅ I Know It</button>
+    <button onclick="markCard(false)">🔄 Still Learning</button>
+  </div>
+
+  <p id="study-results">Known: 0 | Still learning: 0</p>
+
+  <button onclick="restartStudy()">🔁 Restart Session</button>
 
   <hr>
 
@@ -111,6 +144,10 @@
 
     let currentCardIndex = 0;
     let isFlipped = false;
+
+    let knownCards = 0;
+    let learningCards = 0;
+    let sessionRatings = {};
 
     function saveFolders() {
       localStorage.setItem(
@@ -224,6 +261,7 @@
     function folderChanged() {
       currentCardIndex = 0;
       isFlipped = false;
+      restartStudy();
       showFlashcards();
       showStudyCard();
     }
@@ -278,6 +316,49 @@
         (currentCardIndex - 1 + cards.length) % cards.length;
 
       isFlipped = false;
+      showStudyCard();
+    }
+
+    function updateStudyResults() {
+      document.getElementById("study-results").textContent =
+        "Known: " + knownCards +
+        " | Still learning: " + learningCards;
+    }
+
+    function markCard(isKnown) {
+      const cards = getSelectedCards();
+      if (cards.length === 0) return;
+
+      const card = cards[currentCardIndex];
+      const cardKey = flashcards.indexOf(card);
+
+      // If a card is rated again, replace its previous rating.
+      if (sessionRatings[cardKey] === "known") {
+        knownCards--;
+      } else if (sessionRatings[cardKey] === "learning") {
+        learningCards--;
+      }
+
+      sessionRatings[cardKey] = isKnown ? "known" : "learning";
+
+      if (isKnown) {
+        knownCards++;
+      } else {
+        learningCards++;
+      }
+
+      updateStudyResults();
+      nextCard();
+    }
+
+    function restartStudy() {
+      knownCards = 0;
+      learningCards = 0;
+      sessionRatings = {};
+      currentCardIndex = 0;
+      isFlipped = false;
+
+      updateStudyResults();
       showStudyCard();
     }
 
