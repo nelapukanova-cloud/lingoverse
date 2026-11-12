@@ -362,19 +362,6 @@ function updateStudyCounts() {
   updateStudyCounts();
   nextCard();
 }
-
-      sessionRatings[cardKey] = isKnown ? "known" : "learning";
-
-      if (isKnown) {
-        knownCards++;
-      } else {
-        learningCards++;
-      }
-
-      updateStudyResults();
-      nextCard();
-    }
-
     
 function restartStudy() {
   currentCardIndex = 0;
