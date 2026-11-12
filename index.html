@@ -25,6 +25,23 @@
   <h2 id="skill-title">Welcome!</h2>
   <p id="skill-description">Select a skill to get started.</p>
 
+  <hr>
+
+  <h2>📚 My Flashcards</h2>
+
+  <input type="text" id="english-word"
+         placeholder="English word">
+
+  <input type="text" id="czech-word"
+         placeholder="Czech translation">
+
+  <button onclick="addFlashcard()">Add Flashcard</button>
+
+  <h3>My Vocabulary</h3>
+  <div id="flashcard-list"></div>
+
+  <hr>
+
   <h2>My Progress</h2>
   <p>⭐ XP: 0</p>
   <p>🏆 Level: 1</p>
@@ -35,6 +52,24 @@
 
       document.getElementById("skill-description").textContent =
         "Welcome to your " + skill + " practice!";
+    }
+
+    function addFlashcard() {
+      const english = document.getElementById("english-word").value;
+      const czech = document.getElementById("czech-word").value;
+
+      if (english === "" || czech === "") {
+        alert("Please fill in both fields!");
+        return;
+      }
+
+      const card = document.createElement("p");
+      card.textContent = english + " — " + czech;
+
+      document.getElementById("flashcard-list").appendChild(card);
+
+      document.getElementById("english-word").value = "";
+      document.getElementById("czech-word").value = "";
     }
   </script>
 
