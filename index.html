@@ -146,9 +146,33 @@
     let isFlipped = false;
 
     let knownCards = 0;
-    let learningCards = 0;
-    let sessionRatings = {};
+let learningCards = 0;
 
+let sessionRatings = JSON.parse(
+  localStorage.getItem("lingoverse-study-ratings") || "{}"
+);
+
+function saveStudyRatings() {
+  localStorage.setItem(
+    "lingoverse-study-ratings",
+    JSON.stringify(sessionRatings)
+  );
+}
+
+function updateStudyCounts() {
+  knownCards = 0;
+  learningCards = 0;
+
+  getSelectedCards().forEach(function(card) {
+    const cardKey = flashcards.indexOf(card);
+    const rating = sessionRatings[cardKey];
+
+    if (rating === "known") knownCards++;
+    if (rating === "learning") learningCards++;
+  });
+
+  updateStudyResults();
+}
     function saveFolders() {
       localStorage.setItem(
         "lingoverse-folders",
@@ -326,18 +350,18 @@
     }
 
     function markCard(isKnown) {
-      const cards = getSelectedCards();
-      if (cards.length === 0) return;
+  const cards = getSelectedCards();
+  if (cards.length === 0) return;
 
-      const card = cards[currentCardIndex];
-      const cardKey = flashcards.indexOf(card);
+  const card = cards[currentCardIndex];
+  const cardKey = flashcards.indexOf(card);
 
-      // If a card is rated again, replace its previous rating.
-      if (sessionRatings[cardKey] === "known") {
-        knownCards--;
-      } else if (sessionRatings[cardKey] === "learning") {
-        learningCards--;
-      }
+  sessionRatings[cardKey] = isKnown ? "known" : "learning";
+
+  saveStudyRatings();
+  updateStudyCounts();
+  nextCard();
+}
 
       sessionRatings[cardKey] = isKnown ? "known" : "learning";
 
@@ -351,16 +375,14 @@
       nextCard();
     }
 
-    function restartStudy() {
-      knownCards = 0;
-      learningCards = 0;
-      sessionRatings = {};
-      currentCardIndex = 0;
-      isFlipped = false;
+    
+function restartStudy() {
+  currentCardIndex = 0;
+  isFlipped = false;
 
-      updateStudyResults();
-      showStudyCard();
-    }
+  updateStudyCounts();
+  showStudyCard();
+}
 
     saveFolders();
     updateFolderSelect();
