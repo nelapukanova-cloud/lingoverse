@@ -1,10 +1,32 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LingoVerse</title>
+  <style>
+    .study-card {
+      width: 280px;
+      min-height: 160px;
+      border: 2px solid #a78bfa;
+      border-radius: 16px;
+      background: #f5f3ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      margin: 15px 0;
+      cursor: pointer;
+      font-size: 24px;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .study-card:hover {
+      background: #ede9fe;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,29 +52,37 @@
   <h2>📚 My Flashcards</h2>
 
   <h3>📁 My Folders</h3>
-
-  <input type="text" id="folder-name"
-         placeholder="New folder name">
-
+  <input type="text" id="folder-name" placeholder="New folder name">
   <button onclick="addFolder()">Create Folder</button>
 
   <p>
     <label for="folder-select">Choose folder:</label>
-    <select id="folder-select" onchange="showFlashcards()"></select>
+    <select id="folder-select" onchange="folderChanged()"></select>
   </p>
 
   <h3>Add New Word</h3>
-
-  <input type="text" id="english-word"
-         placeholder="English word">
-
-  <input type="text" id="czech-word"
-         placeholder="Czech translation">
-
+  <input type="text" id="english-word" placeholder="English word">
+  <input type="text" id="czech-word" placeholder="Czech translation">
   <button onclick="addFlashcard()">Add Flashcard</button>
 
   <h3>My Vocabulary</h3>
   <div id="flashcard-list"></div>
+
+  <hr>
+
+  <h2>🃏 Study Flashcards</h2>
+  <p>Choose a folder above and click the card to reveal the translation.</p>
+
+  <div id="study-card" class="study-card"
+       role="button" tabindex="0"
+       onclick="flipCard()"
+       onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flipCard(); }">
+    Add some words to start!
+  </div>
+
+  <p id="card-counter"></p>
+  <button onclick="previousCard()">⬅️ Previous</button>
+  <button onclick="nextCard()">Next ➡️</button>
 
   <hr>
 
@@ -75,10 +105,12 @@
       localStorage.getItem("lingoverse-folders") || '["General"]'
     );
 
-    // Keep the original folder for existing words.
     if (!folders.includes("General")) {
       folders.unshift("General");
     }
+
+    let currentCardIndex = 0;
+    let isFlipped = false;
 
     function saveFolders() {
       localStorage.setItem(
@@ -126,19 +158,23 @@
 
       document.getElementById("folder-select").value = name;
       input.value = "";
-      showFlashcards();
+      folderChanged();
+    }
+
+    function getSelectedCards() {
+      const selectedFolder =
+        document.getElementById("folder-select").value;
+
+      return flashcards.filter(function(card) {
+        return (card.folder || "General") === selectedFolder;
+      });
     }
 
     function showFlashcards() {
       const list = document.getElementById("flashcard-list");
-      const selectedFolder =
-        document.getElementById("folder-select").value;
-
       list.innerHTML = "";
 
-      const visibleCards = flashcards.filter(function(card) {
-        return (card.folder || "General") === selectedFolder;
-      });
+      const visibleCards = getSelectedCards();
 
       if (visibleCards.length === 0) {
         list.textContent = "No words in this folder yet.";
@@ -178,15 +214,76 @@
         JSON.stringify(flashcards)
       );
 
-      showFlashcards();
-
       document.getElementById("english-word").value = "";
       document.getElementById("czech-word").value = "";
+
+      showFlashcards();
+      showStudyCard();
+    }
+
+    function folderChanged() {
+      currentCardIndex = 0;
+      isFlipped = false;
+      showFlashcards();
+      showStudyCard();
+    }
+
+    function showStudyCard() {
+      const cards = getSelectedCards();
+      const cardElement = document.getElementById("study-card");
+      const counter = document.getElementById("card-counter");
+
+      if (cards.length === 0) {
+        cardElement.textContent = "Add some words to start!";
+        counter.textContent = "0 / 0";
+        return;
+      }
+
+      if (currentCardIndex >= cards.length) {
+        currentCardIndex = 0;
+      }
+
+      const card = cards[currentCardIndex];
+
+      cardElement.textContent =
+        isFlipped ? card.czech : card.english;
+
+      counter.textContent =
+        (currentCardIndex + 1) + " / " + cards.length;
+    }
+
+    function flipCard() {
+      if (getSelectedCards().length === 0) return;
+
+      isFlipped = !isFlipped;
+      showStudyCard();
+    }
+
+    function nextCard() {
+      const cards = getSelectedCards();
+      if (cards.length === 0) return;
+
+      currentCardIndex =
+        (currentCardIndex + 1) % cards.length;
+
+      isFlipped = false;
+      showStudyCard();
+    }
+
+    function previousCard() {
+      const cards = getSelectedCards();
+      if (cards.length === 0) return;
+
+      currentCardIndex =
+        (currentCardIndex - 1 + cards.length) % cards.length;
+
+      isFlipped = false;
+      showStudyCard();
     }
 
     saveFolders();
     updateFolderSelect();
-    showFlashcards();
+    folderChanged();
   </script>
 
 </body>
