@@ -54,14 +54,47 @@
         "Welcome to your " + skill + " practice!";
     }
 
-    function addFlashcard() {
-      const english = document.getElementById("english-word").value;
-      const czech = document.getElementById("czech-word").value;
+    let flashcards = JSON.parse(
+  localStorage.getItem("lingoverse-flashcards") || "[]"
+);
 
-      if (english === "" || czech === "") {
-        alert("Please fill in both fields!");
-        return;
-      }
+function showFlashcards() {
+  const list = document.getElementById("flashcard-list");
+  list.innerHTML = "";
+
+  flashcards.forEach(function(card) {
+    const item = document.createElement("p");
+    item.textContent = card.english + " — " + card.czech;
+    list.appendChild(item);
+  });
+}
+
+function addFlashcard() {
+  const english = document.getElementById("english-word").value.trim();
+  const czech = document.getElementById("czech-word").value.trim();
+
+  if (english === "" || czech === "") {
+    alert("Please fill in both fields!");
+    return;
+  }
+
+  flashcards.push({
+    english: english,
+    czech: czech
+  });
+
+  localStorage.setItem(
+    "lingoverse-flashcards",
+    JSON.stringify(flashcards)
+  );
+
+  showFlashcards();
+
+  document.getElementById("english-word").value = "";
+  document.getElementById("czech-word").value = "";
+}
+
+showFlashcards();
 
       const card = document.createElement("p");
       card.textContent = english + " — " + czech;
