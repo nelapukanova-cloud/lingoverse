@@ -8,21 +8,35 @@
 </head>
 <body>
 
-  <h1>🌍 Welcome to LingoVerse!</h1>
+  <h1>🌍 LingoVerse</h1>
   <p>Your personal language learning adventure.</p>
 
   <h2>Choose your skill</h2>
 
-  <button>✍️ Writing</button>
-  <button>🎤 Speaking</button>
-  <button>🎧 Listening</button>
-  <button>📖 Reading</button>
-  <button>🧩 Grammar</button>
-  <button>🗂️ Vocabulary</button>
+  <button onclick="showSkill('Writing')">✍️ Writing</button>
+  <button onclick="showSkill('Speaking')">🎤 Speaking</button>
+  <button onclick="showSkill('Listening')">🎧 Listening</button>
+  <button onclick="showSkill('Reading')">📖 Reading</button>
+  <button onclick="showSkill('Grammar')">🧩 Grammar</button>
+  <button onclick="showSkill('Vocabulary')">🗂️ Vocabulary</button>
+
+  <hr>
+
+  <h2 id="skill-title">Welcome!</h2>
+  <p id="skill-description">Select a skill to get started.</p>
 
   <h2>My Progress</h2>
   <p>⭐ XP: 0</p>
   <p>🏆 Level: 1</p>
+
+  <script>
+    function showSkill(skill) {
+      document.getElementById("skill-title").textContent = skill;
+
+      document.getElementById("skill-description").textContent =
+        "Welcome to your " + skill + " practice!";
+    }
+  </script>
 
 </body>
 </html>
