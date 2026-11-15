@@ -706,6 +706,17 @@
           <h2>Where your data lives</h2>
           <p class="muted">Your flashcards, folders and ratings are stored in this browser on this device. They aren't sent anywhere and don't sync to other devices.</p>
         </article>
+        <article class="card empty-card" style="margin-top:18px" aria-labelledby="backup-title">
+          <h2 id="backup-title">Backup and restore</h2>
+          <p class="muted">Download a copy of your flashcards, folders and learning progress, or restore a previously saved backup. Keep the file somewhere safe.</p>
+          <div class="row" style="width:100%; margin-top:8px">
+            <button type="button" class="btn btn-sage" id="export-backup-btn">Export data</button>
+            <button type="button" class="btn btn-lav" id="import-backup-btn">Import data</button>
+          </div>
+          <input type="file" id="backup-file-input" accept=".json,application/json" hidden aria-label="Choose LingoVerse backup file">
+          <p class="muted" style="font-size:.9rem">Import replaces the words, folders and ratings currently stored in this browser. Export your current data first.</p>
+          <p class="form-msg" id="backup-message" role="status" aria-live="polite"></p>
+        </article>
         <article class="card preview empty-card" style="margin-top:18px">
           <span class="pill">Preview</span>
           <h2>More settings are coming</h2>
@@ -1229,7 +1240,114 @@
         if (returnFocus) menuBtn.focus();
       }
 
+       /* ---------- Backup and restore ---------- */
+       function backupMessage(message, success) {
+         var target = $("backup-message");
+         target.className = "form-msg" + (success ? " ok" : "");
+         target.textContent = message;
+       }
+
+       function exportBackup() {
+         try {
+           var backup = {
+             format: "lingoverse-backup",
+             version: 1,
+             exportedAt: new Date().toISOString(),
+             flashcards: flashcards,
+             folders: folders,
+             ratings: sessionRatings
+           };
+           var blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+           var url = URL.createObjectURL(blob);
+           var link = document.createElement("a");
+           link.href = url;
+           link.download = "lingoverse-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+           document.body.appendChild(link);
+           link.click();
+           link.remove();
+           setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+           backupMessage("Backup downloaded. Keep this file safe.", true);
+         } catch (error) {
+           backupMessage("Could not export your data. Please try again.", false);
+         }
+       }
+
+       function validBackup(data) {
+         if (!data || typeof data !== "object" || Array.isArray(data) ||
+             data.format !== "lingoverse-backup" || data.version !== 1 ||
+             !Array.isArray(data.flashcards) || !Array.isArray(data.folders) ||
+             !data.ratings || typeof data.ratings !== "object" || Array.isArray(data.ratings)) return false;
+         if (data.folders.length > 10000 || data.flashcards.length > 100000) return false;
+         if (!data.folders.every(function (f) { return typeof f === "string" && f.trim().length > 0 && f.length <= 300; })) return false;
+         if (new Set(data.folders.map(function (f) { return f.toLowerCase(); })).size !== data.folders.length) return false;
+         var folderNames = new Set(data.folders);
+         folderNames.add("General");
+         if (!data.flashcards.every(function (c) {
+           return c && typeof c === "object" && !Array.isArray(c) &&
+             typeof c.english === "string" && typeof c.czech === "string" &&
+             c.english.length <= 10000 && c.czech.length <= 10000 &&
+             (c.folder === undefined || (typeof c.folder === "string" && folderNames.has(c.folder)));
+         })) return false;
+         return Object.keys(data.ratings).every(function (key) {
+           return /^(0|[1-9]\d*)$/.test(key) && Number(key) < data.flashcards.length &&
+             (data.ratings[key] === "known" || data.ratings[key] === "learning");
+         });
+       }
+
+       function importBackup(file) {
+         if (!file) return;
+         if (file.size > 20 * 1024 * 1024) {
+           backupMessage("This backup file is too large (maximum 20 MB).", false);
+           return;
+         }
+         var reader = new FileReader();
+         reader.onerror = function () { backupMessage("Could not read the selected file.", false); };
+         reader.onload = function () {
+           var data;
+           try { data = JSON.parse(reader.result); }
+           catch (e) { backupMessage("This is not a valid JSON backup file.", false); return; }
+           if (!validBackup(data)) {
+             backupMessage("This file is not a valid LingoVerse backup.", false);
+             return;
+           }
+           var question = "Import " + data.flashcards.length + " words and " + data.folders.length +
+             " folders? This will REPLACE your current words, folders and progress in this browser. Export them first if needed.";
+           var isCzech = false;
+           try { isCzech = localStorage.getItem("lingoverse-interface-language") === "cs"; } catch (ignored) {}
+           if (isCzech) question = "Importovat " + data.flashcards.length + " slovíček a " + data.folders.length +
+             " složek? Tím NAHRADÍŠ současná slovíčka, složky a pokrok v tomto prohlížeči. Nejdřív si je případně exportuj.";
+           if (!window.confirm(question)) {
+             backupMessage("Import cancelled. Your data was not changed.", false);
+             return;
+           }
+           var keys = [KEY_CARDS, KEY_FOLDERS, KEY_RATINGS];
+           var values = [data.flashcards, data.folders, data.ratings];
+           var previous = [];
+           try {
+             keys.forEach(function (key) { previous.push(localStorage.getItem(key)); });
+             keys.forEach(function (key, i) { localStorage.setItem(key, JSON.stringify(values[i])); });
+           } catch (error) {
+             keys.forEach(function (key, i) {
+               try { if (previous[i] == null) localStorage.removeItem(key); else localStorage.setItem(key, previous[i]); }
+               catch (ignored) {}
+             });
+             backupMessage("Could not save the backup. Your previous data was restored where possible.", false);
+             return;
+           }
+           window.location.reload();
+         };
+         reader.readAsText(file, "UTF-8");
+       }
+
       /* ---------- Events ---------- */
+       $("export-backup-btn").addEventListener("click", exportBackup);
+       $("import-backup-btn").addEventListener("click", function () { $("backup-file-input").click(); });
+       $("backup-file-input").addEventListener("change", function () {
+         var file = this.files && this.files[0];
+         this.value = "";
+         importBackup(file);
+       });
+
       folderSelect.addEventListener("change", folderChanged);
 
       $("add-folder-btn").addEventListener("click", addFolder);
@@ -1311,7 +1429,7 @@
   /* Interface translations. Saved flashcards and folders are never translated or changed. */
   (function () {
     "use strict";
-    var dictionary = {"Skip to content": "Přeskočit na obsah", "Dashboard": "Přehled", "Vocabulary": "Slovíčka", "Writing": "Psaní", "Speaking": "Mluvení", "Listening": "Poslech", "Reading": "Čtení", "Grammar": "Gramatika", "Rewards": "Odměny", "Companions": "Společníci", "Settings": "Nastavení", "soon": "brzy", "Saved on this device": "Uloženo v tomto zařízení", "Your words, folders and ratings stay in this browser.": "Tvoje slovíčka, složky a hodnocení zůstávají v tomto prohlížeči.", "Language": "Jazyk", "Choose folder:": "Vyber složku:", "Welcome back!": "Vítej zpátky!", "Your personal language learning adventure.": "Tvoje vlastní cesta za učením jazyků.", "Practice now": "Procvičovat", "Add words": "Přidat slovíčka", "Preview": "Ukázka", "Level": "Úroveň", "XP isn't earned yet.": "XP zatím nelze získávat.", "Levels will unlock with XP.": "Úrovně se odemknou pomocí XP.", "Daily quests": "Denní úkoly", "Review 10 words": "Zopakuj 10 slovíček", "Clear a difficult word": "Zvládni obtížné slovíčko", "Quick practice": "Rychlé procvičování", "Folder:": "Složka:", "All Words": "Všechna slovíčka", "Difficult Words": "Obtížná slovíčka", "Mode: All Words": "Režim: Všechna slovíčka", "Mode: Difficult Words": "Režim: Obtížná slovíčka", "English": "Anglicky", "Czech": "Česky", "Add some words to start!": "Začni přidáním slovíček!", "Click the card to reveal the translation.": "Klikni na kartičku a zobraz překlad.", "Previous": "Předchozí", "Next": "Další", "Reveal the translation, then choose how well you know the word.": "Otoč kartičku a vyber, jak dobře slovíčko znáš.", "I Know It": "Umím to", "Still Learning": "Ještě se učím", "Known: 0 | Still learning: 0": "Umím: 0 | Ještě se učím: 0", "Restart Session": "Začít znovu", "Study progress": "Pokrok v učení", "of words known": "zvládnutých slovíček", "Known": "Umím", "Still learning": "Ještě se učím", "Not rated yet": "Zatím nehodnoceno", "Total words": "Celkem slovíček", "Vocabulary folders": "Složky slovíček", "Manage words": "Spravovat slovíčka", "My Flashcards": "Moje kartičky", "My Folders": "Moje složky", "New folder name": "Název nové složky", "Create Folder": "Vytvořit složku", "Add New Word": "Přidat nové slovíčko", "English word": "Anglické slovíčko", "Czech translation": "Český překlad", "Add Flashcard": "Přidat kartičku", "My Vocabulary": "Moje slovíčka", "Welcome!": "Vítej!", "Select a skill to get started.": "Vyber dovednost, se kterou chceš začít.", "Activities for this skill aren't ready yet": "Cvičení pro tuto dovednost ještě nejsou připravena", "Vocabulary practice works today, so you can keep learning words in the meantime.": "Procvičování slovíček už funguje, takže můžeš zatím pokračovat v učení.", "Open vocabulary": "Otevřít slovíčka", "Badges and milestones will appear here.": "Tady se budou zobrazovat odznaky a milníky.", "Nothing to unlock yet": "Zatím není co odemykat", "First 10 words": "Prvních 10 slovíček", "Folder builder": "Tvůrce složek", "Difficult words cleared": "Zvládnutá obtížná slovíčka", "Study companions will join you here.": "Tady se k tobě připojí studijní společníci.", "No companions yet": "Zatím žádní společníci", "This page is a placeholder for now.": "Tato stránka je zatím připravovaná.", "Options for LingoVerse.": "Možnosti aplikace LingoVerse.", "App language": "Jazyk aplikace", "Choose the language of the interface.": "Vyber jazyk prostředí aplikace.", "Where your data lives": "Kde jsou uložená tvoje data", "Your flashcards, folders and ratings are stored in this browser on this device. They aren't sent anywhere and don't sync to other devices.": "Tvoje kartičky, složky a hodnocení jsou uložené v tomto prohlížeči na tomto zařízení. Nikam se neodesílají ani se nesynchronizují s jinými zařízeními.", "More settings are coming": "Další nastavení připravujeme", "Daily goals and appearance options will appear here.": "Tady později najdeš denní cíle a nastavení vzhledu.", "New folder": "Nová složka", "No words in this folder yet.": "V této složce zatím nejsou žádná slovíčka.", "Enter a folder name.": "Zadej název složky.", "This folder already exists.": "Tato složka už existuje.", "Folder created.": "Složka vytvořena.", "Fill in both fields to add a word.": "Pro přidání slovíčka vyplň obě pole.", "No difficult words to practice! 🎉": "Žádná obtížná slovíčka k procvičení! 🎉", "Open menu": "Otevřít nabídku", "Close menu": "Zavřít nabídku", "Main": "Hlavní navigace", "Choose what you want to practice": "Vyber, co chceš procvičovat", "Words known in this folder": "Zvládnutá slovíčka v této složce", "XP, preview only": "XP, pouze ukázka", "Level, preview only": "Úroveň, pouze ukázka", "Daily quests, preview only": "Denní úkoly, pouze ukázka", "Good morning!": "Dobré ráno!", "Good afternoon!": "Dobré odpoledne!", "Good evening!": "Dobrý večer!"};
+    var dictionary = {"Backup and restore":"Zálohování a obnovení", "Download a copy of your flashcards, folders and learning progress, or restore a previously saved backup. Keep the file somewhere safe.":"Stáhni si zálohu kartiček, složek a pokroku nebo obnov dříve uloženou zálohu. Soubor bezpečně uschovej.", "Export data":"Exportovat data", "Import data":"Importovat data", "Import replaces the words, folders and ratings currently stored in this browser. Export your current data first.":"Import nahradí slovíčka, složky a hodnocení uložená v tomto prohlížeči. Nejprve si aktuální data exportuj.", "Choose LingoVerse backup file":"Vyber záložní soubor LingoVerse", "Backup downloaded. Keep this file safe.":"Záloha stažena. Soubor bezpečně uschovej.", "Could not export your data. Please try again.":"Data se nepodařilo exportovat. Zkus to znovu.", "This backup file is too large (maximum 20 MB).":"Záložní soubor je příliš velký (maximálně 20 MB).", "Could not read the selected file.":"Vybraný soubor se nepodařilo přečíst.", "This is not a valid JSON backup file.":"Toto není platný záložní soubor JSON.", "This file is not a valid LingoVerse backup.":"Tento soubor není platná záloha LingoVerse.", "Import cancelled. Your data was not changed.":"Import zrušen. Data zůstala beze změny.", "Could not save the backup. Your previous data was restored where possible.":"Zálohu se nepodařilo uložit. Původní data byla podle možností obnovena.", "Skip to content": "Přeskočit na obsah", "Dashboard": "Přehled", "Vocabulary": "Slovíčka", "Writing": "Psaní", "Speaking": "Mluvení", "Listening": "Poslech", "Reading": "Čtení", "Grammar": "Gramatika", "Rewards": "Odměny", "Companions": "Společníci", "Settings": "Nastavení", "soon": "brzy", "Saved on this device": "Uloženo v tomto zařízení", "Your words, folders and ratings stay in this browser.": "Tvoje slovíčka, složky a hodnocení zůstávají v tomto prohlížeči.", "Language": "Jazyk", "Choose folder:": "Vyber složku:", "Welcome back!": "Vítej zpátky!", "Your personal language learning adventure.": "Tvoje vlastní cesta za učením jazyků.", "Practice now": "Procvičovat", "Add words": "Přidat slovíčka", "Preview": "Ukázka", "Level": "Úroveň", "XP isn't earned yet.": "XP zatím nelze získávat.", "Levels will unlock with XP.": "Úrovně se odemknou pomocí XP.", "Daily quests": "Denní úkoly", "Review 10 words": "Zopakuj 10 slovíček", "Clear a difficult word": "Zvládni obtížné slovíčko", "Quick practice": "Rychlé procvičování", "Folder:": "Složka:", "All Words": "Všechna slovíčka", "Difficult Words": "Obtížná slovíčka", "Mode: All Words": "Režim: Všechna slovíčka", "Mode: Difficult Words": "Režim: Obtížná slovíčka", "English": "Anglicky", "Czech": "Česky", "Add some words to start!": "Začni přidáním slovíček!", "Click the card to reveal the translation.": "Klikni na kartičku a zobraz překlad.", "Previous": "Předchozí", "Next": "Další", "Reveal the translation, then choose how well you know the word.": "Otoč kartičku a vyber, jak dobře slovíčko znáš.", "I Know It": "Umím to", "Still Learning": "Ještě se učím", "Known: 0 | Still learning: 0": "Umím: 0 | Ještě se učím: 0", "Restart Session": "Začít znovu", "Study progress": "Pokrok v učení", "of words known": "zvládnutých slovíček", "Known": "Umím", "Still learning": "Ještě se učím", "Not rated yet": "Zatím nehodnoceno", "Total words": "Celkem slovíček", "Vocabulary folders": "Složky slovíček", "Manage words": "Spravovat slovíčka", "My Flashcards": "Moje kartičky", "My Folders": "Moje složky", "New folder name": "Název nové složky", "Create Folder": "Vytvořit složku", "Add New Word": "Přidat nové slovíčko", "English word": "Anglické slovíčko", "Czech translation": "Český překlad", "Add Flashcard": "Přidat kartičku", "My Vocabulary": "Moje slovíčka", "Welcome!": "Vítej!", "Select a skill to get started.": "Vyber dovednost, se kterou chceš začít.", "Activities for this skill aren't ready yet": "Cvičení pro tuto dovednost ještě nejsou připravena", "Vocabulary practice works today, so you can keep learning words in the meantime.": "Procvičování slovíček už funguje, takže můžeš zatím pokračovat v učení.", "Open vocabulary": "Otevřít slovíčka", "Badges and milestones will appear here.": "Tady se budou zobrazovat odznaky a milníky.", "Nothing to unlock yet": "Zatím není co odemykat", "First 10 words": "Prvních 10 slovíček", "Folder builder": "Tvůrce složek", "Difficult words cleared": "Zvládnutá obtížná slovíčka", "Study companions will join you here.": "Tady se k tobě připojí studijní společníci.", "No companions yet": "Zatím žádní společníci", "This page is a placeholder for now.": "Tato stránka je zatím připravovaná.", "Options for LingoVerse.": "Možnosti aplikace LingoVerse.", "App language": "Jazyk aplikace", "Choose the language of the interface.": "Vyber jazyk prostředí aplikace.", "Where your data lives": "Kde jsou uložená tvoje data", "Your flashcards, folders and ratings are stored in this browser on this device. They aren't sent anywhere and don't sync to other devices.": "Tvoje kartičky, složky a hodnocení jsou uložené v tomto prohlížeči na tomto zařízení. Nikam se neodesílají ani se nesynchronizují s jinými zařízeními.", "More settings are coming": "Další nastavení připravujeme", "Daily goals and appearance options will appear here.": "Tady později najdeš denní cíle a nastavení vzhledu.", "New folder": "Nová složka", "No words in this folder yet.": "V této složce zatím nejsou žádná slovíčka.", "Enter a folder name.": "Zadej název složky.", "This folder already exists.": "Tato složka už existuje.", "Folder created.": "Složka vytvořena.", "Fill in both fields to add a word.": "Pro přidání slovíčka vyplň obě pole.", "No difficult words to practice! 🎉": "Žádná obtížná slovíčka k procvičení! 🎉", "Open menu": "Otevřít nabídku", "Close menu": "Zavřít nabídku", "Main": "Hlavní navigace", "Choose what you want to practice": "Vyber, co chceš procvičovat", "Words known in this folder": "Zvládnutá slovíčka v této složce", "XP, preview only": "XP, pouze ukázka", "Level, preview only": "Úroveň, pouze ukázka", "Daily quests, preview only": "Denní úkoly, pouze ukázka", "Good morning!": "Dobré ráno!", "Good afternoon!": "Dobré odpoledne!", "Good evening!": "Dobrý večer!"};
     var storageKey = "lingoverse-interface-language";
     var current = "en";
     try { current = localStorage.getItem(storageKey) === "cs" ? "cs" : "en"; } catch (e) {}
