@@ -106,6 +106,11 @@
   </div>
 
   <h3>🧠 Learning Mode</h3>
+  
+  <p>Choose what you want to practice:</p>
+<button onclick="setPracticeMode(false)">📚 All Words</button>
+<button onclick="setPracticeMode(true)">🔄 Difficult Words</button>
+<p id="practice-mode-label">Mode: All Words</p>
   <p>Reveal the translation, then choose how well you know the word.</p>
 
   <div class="study-buttons">
@@ -144,6 +149,7 @@
 
     let currentCardIndex = 0;
     let isFlipped = false;
+    let difficultOnly = false;
 
     let knownCards = 0;
 let learningCards = 0;
@@ -221,7 +227,54 @@ function updateStudyCounts() {
       input.value = "";
       folderChanged();
     }
+function setPracticeMode(onlyDifficult) {
+  difficultOnly = onlyDifficult;
+  currentCardIndex = 0;
+  isFlipped = false;
 
+  document.getElementById("practice-mode-label").textContent =
+    onlyDifficult ? "Mode: Difficult Words" : "Mode: All Words";
+
+  showStudyCard();
+}
+    function showStudyCard() {
+  const allCards = getSelectedCards();
+
+  const cards = difficultOnly
+    ? allCards.filter(function(card) {
+        const key = flashcards.indexOf(card);
+        return sessionRatings[key] === "learning";
+      })
+    : allCards;
+
+  const cardElement = document.getElementById("study-card");
+  const counter = document.getElementById("card-counter");
+
+  if (cards.length === 0) {
+    cardElement.textContent = difficultOnly
+      ? "No difficult words to practice! 🎉"
+      : "Add some words to start!";
+
+    counter.textContent = "0 / 0";
+    return;
+  }
+
+  if (currentCardIndex >= cards.length) {
+    currentCardIndex = 0;
+  }
+
+  const card = cards[currentCardIndex];
+
+  cardElement.textContent =
+    isFlipped ? card.czech : card.english;
+
+  counter.textContent =
+    (currentCardIndex + 1) + " / " + cards.length;
+}
+
+  if (currentCardIndex >= cards.length) {
+    currentCardIndex = 0;
+  }
     function getSelectedCards() {
       const selectedFolder =
         document.getElementById("folder-select").value;
@@ -321,36 +374,49 @@ function updateStudyCounts() {
       showStudyCard();
     }
 
-    function nextCard() {
-      const cards = getSelectedCards();
-      if (cards.length === 0) return;
+   function getPracticeCards() {
+  const cards = getSelectedCards();
 
-      currentCardIndex =
-        (currentCardIndex + 1) % cards.length;
+  if (!difficultOnly) {
+    return cards;
+  }
 
-      isFlipped = false;
-      showStudyCard();
-    }
+  return cards.filter(function(card) {
+    const key = flashcards.indexOf(card);
+    return sessionRatings[key] === "learning";
+  });
+}
 
-    function previousCard() {
-      const cards = getSelectedCards();
-      if (cards.length === 0) return;
+function nextCard() {
+  const cards = getPracticeCards();
 
-      currentCardIndex =
-        (currentCardIndex - 1 + cards.length) % cards.length;
+  if (cards.length === 0) return;
 
-      isFlipped = false;
-      showStudyCard();
-    }
+  currentCardIndex = (currentCardIndex + 1) % cards.length;
+  isFlipped = false;
+  showStudyCard();
+}
 
+function previousCard() {
+  const cards = getPracticeCards();
+
+  if (cards.length === 0) return;
+
+  currentCardIndex =
+    (currentCardIndex - 1 + cards.length) % cards.length;
+
+  isFlipped = false;
+  showStudyCard();
+}
     function updateStudyResults() {
       document.getElementById("study-results").textContent =
         "Known: " + knownCards +
         " | Still learning: " + learningCards;
     }
 
-    function markCard(isKnown) {
-  const cards = getSelectedCards();
+   function markCard(isKnown) {
+  const cards = getPracticeCards();
+
   if (cards.length === 0) return;
 
   const card = cards[currentCardIndex];
@@ -360,7 +426,19 @@ function updateStudyCounts() {
 
   saveStudyRatings();
   updateStudyCounts();
-  nextCard();
+
+  if (difficultOnly && isKnown) {
+    const remainingCards = getPracticeCards();
+
+    if (currentCardIndex >= remainingCards.length) {
+      currentCardIndex = 0;
+    }
+
+    isFlipped = false;
+    showStudyCard();
+  } else {
+    nextCard();
+  }
 }
     
 function restartStudy() {
