@@ -386,6 +386,13 @@
       *, *::before, *::after { animation: none !important; transition: none !important; }
       html { scroll-behavior: auto; }
     }
+
+    /* Language switcher */
+    .language-switch { display:inline-flex; align-items:center; gap:7px; font-size:.85rem; font-weight:700; color:var(--ink-soft); }
+    .language-switch select { width:auto; min-width:112px; min-height:38px; padding:0 10px; border-radius:12px; background:var(--card); }
+    .sidebar-language { padding: 6px 10px; }
+    .settings-language { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; width:100%; }
+    @media (max-width:860px) { .topbar .language-switch { margin-left:auto; } .topbar .language-switch select { min-width:96px; } }
   </style>
 </head>
 <body>
@@ -459,6 +466,7 @@
         </ul>
       </nav>
 
+      <label class="language-switch sidebar-language" for="language-sidebar"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span>Language</span><select id="language-sidebar" aria-label="Language / Jazyk"><option value="en">🇬🇧 English</option><option value="cs">🇨🇿 Čeština</option></select></label>
       <div class="sidebar-foot">
         <strong>Saved on this device</strong>
         Your words, folders and ratings stay in this browser.
@@ -1298,5 +1306,108 @@
     })();
   </script>
 
+
+  <script>
+  /* Interface translations. Saved flashcards and folders are never translated or changed. */
+  (function () {
+    "use strict";
+    var dictionary = {"Skip to content": "Přeskočit na obsah", "Dashboard": "Přehled", "Vocabulary": "Slovíčka", "Writing": "Psaní", "Speaking": "Mluvení", "Listening": "Poslech", "Reading": "Čtení", "Grammar": "Gramatika", "Rewards": "Odměny", "Companions": "Společníci", "Settings": "Nastavení", "soon": "brzy", "Saved on this device": "Uloženo v tomto zařízení", "Your words, folders and ratings stay in this browser.": "Tvoje slovíčka, složky a hodnocení zůstávají v tomto prohlížeči.", "Language": "Jazyk", "Choose folder:": "Vyber složku:", "Welcome back!": "Vítej zpátky!", "Your personal language learning adventure.": "Tvoje vlastní cesta za učením jazyků.", "Practice now": "Procvičovat", "Add words": "Přidat slovíčka", "Preview": "Ukázka", "Level": "Úroveň", "XP isn't earned yet.": "XP zatím nelze získávat.", "Levels will unlock with XP.": "Úrovně se odemknou pomocí XP.", "Daily quests": "Denní úkoly", "Review 10 words": "Zopakuj 10 slovíček", "Clear a difficult word": "Zvládni obtížné slovíčko", "Quick practice": "Rychlé procvičování", "Folder:": "Složka:", "All Words": "Všechna slovíčka", "Difficult Words": "Obtížná slovíčka", "Mode: All Words": "Režim: Všechna slovíčka", "Mode: Difficult Words": "Režim: Obtížná slovíčka", "English": "Anglicky", "Czech": "Česky", "Add some words to start!": "Začni přidáním slovíček!", "Click the card to reveal the translation.": "Klikni na kartičku a zobraz překlad.", "Previous": "Předchozí", "Next": "Další", "Reveal the translation, then choose how well you know the word.": "Otoč kartičku a vyber, jak dobře slovíčko znáš.", "I Know It": "Umím to", "Still Learning": "Ještě se učím", "Known: 0 | Still learning: 0": "Umím: 0 | Ještě se učím: 0", "Restart Session": "Začít znovu", "Study progress": "Pokrok v učení", "of words known": "zvládnutých slovíček", "Known": "Umím", "Still learning": "Ještě se učím", "Not rated yet": "Zatím nehodnoceno", "Total words": "Celkem slovíček", "Vocabulary folders": "Složky slovíček", "Manage words": "Spravovat slovíčka", "My Flashcards": "Moje kartičky", "My Folders": "Moje složky", "New folder name": "Název nové složky", "Create Folder": "Vytvořit složku", "Add New Word": "Přidat nové slovíčko", "English word": "Anglické slovíčko", "Czech translation": "Český překlad", "Add Flashcard": "Přidat kartičku", "My Vocabulary": "Moje slovíčka", "Welcome!": "Vítej!", "Select a skill to get started.": "Vyber dovednost, se kterou chceš začít.", "Activities for this skill aren't ready yet": "Cvičení pro tuto dovednost ještě nejsou připravena", "Vocabulary practice works today, so you can keep learning words in the meantime.": "Procvičování slovíček už funguje, takže můžeš zatím pokračovat v učení.", "Open vocabulary": "Otevřít slovíčka", "Badges and milestones will appear here.": "Tady se budou zobrazovat odznaky a milníky.", "Nothing to unlock yet": "Zatím není co odemykat", "First 10 words": "Prvních 10 slovíček", "Folder builder": "Tvůrce složek", "Difficult words cleared": "Zvládnutá obtížná slovíčka", "Study companions will join you here.": "Tady se k tobě připojí studijní společníci.", "No companions yet": "Zatím žádní společníci", "This page is a placeholder for now.": "Tato stránka je zatím připravovaná.", "Options for LingoVerse.": "Možnosti aplikace LingoVerse.", "App language": "Jazyk aplikace", "Choose the language of the interface.": "Vyber jazyk prostředí aplikace.", "Where your data lives": "Kde jsou uložená tvoje data", "Your flashcards, folders and ratings are stored in this browser on this device. They aren't sent anywhere and don't sync to other devices.": "Tvoje kartičky, složky a hodnocení jsou uložené v tomto prohlížeči na tomto zařízení. Nikam se neodesílají ani se nesynchronizují s jinými zařízeními.", "More settings are coming": "Další nastavení připravujeme", "Daily goals and appearance options will appear here.": "Tady později najdeš denní cíle a nastavení vzhledu.", "New folder": "Nová složka", "No words in this folder yet.": "V této složce zatím nejsou žádná slovíčka.", "Enter a folder name.": "Zadej název složky.", "This folder already exists.": "Tato složka už existuje.", "Folder created.": "Složka vytvořena.", "Fill in both fields to add a word.": "Pro přidání slovíčka vyplň obě pole.", "No difficult words to practice! 🎉": "Žádná obtížná slovíčka k procvičení! 🎉", "Open menu": "Otevřít nabídku", "Close menu": "Zavřít nabídku", "Main": "Hlavní navigace", "Choose what you want to practice": "Vyber, co chceš procvičovat", "Words known in this folder": "Zvládnutá slovíčka v této složce", "XP, preview only": "XP, pouze ukázka", "Level, preview only": "Úroveň, pouze ukázka", "Daily quests, preview only": "Denní úkoly, pouze ukázka", "Good morning!": "Dobré ráno!", "Good afternoon!": "Dobré odpoledne!", "Good evening!": "Dobrý večer!"};
+    var storageKey = "lingoverse-interface-language";
+    var current = "en";
+    try { current = localStorage.getItem(storageKey) === "cs" ? "cs" : "en"; } catch (e) {}
+    var originals = new WeakMap();
+    var excluded = ".fc-name, .word-list, .words, #folder-chips, #folder-select, #practice-folder-name, #progress-folder-name, #vocab-folder-name, #english-word, #czech-word, #folder-name, .brand, #study-card-text, #study-card-label";
+    function translate(source) {
+      if (Object.prototype.hasOwnProperty.call(dictionary, source)) return dictionary[source];
+      var m;
+      if ((m = /^Known: (\d+) \| Still learning: (\d+)$/.exec(source))) return "Umím: " + m[1] + " | Ještě se učím: " + m[2];
+      if ((m = /^Mode: (All Words|Difficult Words)$/.exec(source))) return "Režim: " + dictionary[m[1]];
+      if ((m = /^(\d+) words? in (\d+) folders?\.$/.exec(source))) return m[1] + " slovíček v " + m[2] + " složkách.";
+      if ((m = /^(\d+) words?, (\d+)% known$/.exec(source))) return m[1] + " slovíček, " + m[2] + " % zvládnuto";
+      if ((m = /^Added to (.+)\.$/.exec(source))) return "Přidáno do složky " + m[1] + ".";
+      if ((m = /^Welcome to your (.+) practice!$/.exec(source))) return "Vítej v procvičování: " + (dictionary[m[1]] || m[1]) + "!";
+      if ((m = /^Known: $/.exec(source))) return "Umím: ";
+      if ((m = /^Still learning: $/.exec(source))) return "Ještě se učím: ";
+      if ((m = /^Not rated: $/.exec(source))) return "Nehodnoceno: ";
+      return source;
+    }
+    function excludedNode(node) {
+      var parent = node.parentElement;
+      return !parent || !!parent.closest(excluded);
+    }
+    function processText(node) {
+      if (excludedNode(node)) return;
+      var actual = node.nodeValue;
+      var previous = originals.get(node);
+      if (previous === undefined) previous = actual;
+      else if (actual !== previous && actual !== translate(previous)) previous = actual;
+      originals.set(node, previous);
+      var trimmed = previous.trim();
+      var result = current === "cs" ? translate(trimmed) : trimmed;
+      if (result === trimmed) {
+        if (actual !== previous) node.nodeValue = previous;
+      } else {
+        var start = previous.match(/^\s*/)[0], end = previous.match(/\s*$/)[0];
+        var output = start + result + end;
+        if (actual !== output) node.nodeValue = output;
+      }
+    }
+    function scan(root) {
+      if (root.nodeType === Node.TEXT_NODE) { processText(root); return; }
+      if (root.nodeType !== Node.ELEMENT_NODE) return;
+      if (root.matches && root.matches(excluded)) return;
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      var node, nodes = [];
+      while ((node = walker.nextNode())) nodes.push(node);
+      nodes.forEach(processText);
+    }
+    var attrOriginals = new WeakMap();
+    function scanAttributes() {
+      document.querySelectorAll("[placeholder], [aria-label]").forEach(function (element) {
+        if (element.matches(excluded)) return;
+        var record = attrOriginals.get(element) || {};
+        ["placeholder", "aria-label"].forEach(function (attr) {
+          if (!element.hasAttribute(attr)) return;
+          var value = element.getAttribute(attr);
+          if (!record[attr] || (value !== record[attr] && value !== translate(record[attr]))) record[attr] = value;
+          var next = current === "cs" ? translate(record[attr]) : record[attr];
+          if (value !== next) element.setAttribute(attr, next);
+        });
+        attrOriginals.set(element, record);
+      });
+    }
+    var busy = false;
+    function refresh() {
+      if (busy) return;
+      busy = true;
+      scan(document.body);
+      scanAttributes();
+      document.documentElement.lang = current === "cs" ? "cs" : "en";
+      document.querySelectorAll("#language-top, #language-sidebar, #language-settings").forEach(function (select) { select.value = current; });
+      var active = document.querySelector(".nav-link[aria-current=page]");
+      if (active) {
+        var section = active.dataset.view;
+        var names = {dashboard:"Dashboard",vocabulary:"Vocabulary",writing:"Writing",speaking:"Speaking",listening:"Listening",reading:"Reading",grammar:"Grammar",rewards:"Rewards",companions:"Companions",settings:"Settings"};
+        var name = names[section] || "Dashboard";
+        document.title = "LingoVerse – " + (current === "cs" ? translate(name) : name);
+      }
+      busy = false;
+    }
+    document.querySelectorAll("#language-top, #language-sidebar, #language-settings").forEach(function (select) {
+      select.addEventListener("change", function () {
+        current = select.value === "cs" ? "cs" : "en";
+        try { localStorage.setItem(storageKey, current); } catch (e) {}
+        refresh();
+      });
+    });
+    var observer = new MutationObserver(function (mutations) {
+      if (busy) return;
+      if (mutations.some(function (m) { return m.type === "childList" || m.type === "characterData"; })) refresh();
+    });
+    observer.observe(document.body, {subtree:true, childList:true, characterData:true});
+    window.addEventListener("hashchange", function () { setTimeout(refresh, 0); });
+    refresh();
+  })();
+  </script>
 </body>
 </html>
