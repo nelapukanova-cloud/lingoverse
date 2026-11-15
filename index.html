@@ -3,421 +3,1299 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FBF6EE">
   <title>LingoVerse</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C7B4F0'/%3E%3Cpath d='M4 16h24M16 2c6 6 6 22 0 28M16 2c-6 6-6 22 0 28' fill='none' stroke='%232E2A3B' stroke-width='2'/%3E%3C/svg%3E">
 
   <style>
+    :root {
+      --cream: #FBF6EE;
+      --cream-2: #F3EBDD;
+      --card: #FFFDF9;
+      --ink: #2E2A3B;
+      --ink-soft: #6A6478;
+      --line: #EBDFCD;
+
+      --pink: #F2B9D4;
+      --pink-soft: #FCE8F1;
+      --pink-ink: #92386A;
+      --lav: #C7B4F0;
+      --lav-soft: #EFE9FC;
+      --lav-ink: #55409A;
+      --sage: #B9DDB8;
+      --sage-soft: #E8F4E7;
+      --sage-ink: #346F33;
+      --sage-deep: #8CCB8A;
+
+      --shadow-sm: 0 1px 2px rgba(60, 40, 70, .06), 0 4px 14px -8px rgba(60, 40, 70, .18);
+      --shadow-md: 0 2px 4px rgba(60, 40, 70, .06), 0 14px 34px -16px rgba(80, 55, 120, .32);
+
+      --font-display: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "Arial Rounded MT Bold", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+      --sidebar-w: 256px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-width: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.5;
+      color-scheme: light;
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+    h1 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); font-weight: 800; }
+    h2 { font-size: 1.15rem; font-weight: 750; }
+    p { margin: 0; }
+    .muted { color: var(--ink-soft); }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    :focus-visible { outline: 3px solid var(--lav-ink); outline-offset: 2px; }
+
+    .skip-link {
+      position: absolute; left: 12px; top: -60px; z-index: 100;
+      background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px;
+    }
+    .skip-link:focus { top: 12px; }
+
+    .ic {
+      width: 20px; height: 20px; flex: none;
+      fill: none; stroke: currentColor; stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ---------- Layout shell ---------- */
+    .app { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); min-height: 100vh; }
+
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; height: 100dvh;
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 22px 16px 18px;
+      background: var(--card);
+      border-right: 1px solid var(--line);
+      overflow-y: auto;
+    }
+    .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 0 8px 10px; }
+
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;
+      color: var(--ink); text-decoration: none;
+    }
+    .brand-mark {
+      width: 36px; height: 36px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: linear-gradient(140deg, var(--pink), var(--lav));
+      color: var(--ink);
+    }
+
+    .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+    .nav-label { margin: 14px 12px 4px; font-size: .8rem; font-weight: 650; color: var(--ink-soft); }
+    .nav-link {
+      display: flex; align-items: center; gap: 12px;
+      min-height: 44px; padding: 0 12px;
+      border-radius: 14px; color: var(--ink); text-decoration: none; font-weight: 600;
+      transition: background .15s;
+    }
+    .nav-link:hover { background: var(--cream); }
+    .nav-link[aria-current="page"] { background: var(--lav-soft); color: var(--lav-ink); }
+    .nav-link[aria-current="page"] .ic { stroke-width: 2.2; }
+    .nav-link .tag {
+      margin-left: auto; font-size: .72rem; font-weight: 600; color: var(--ink-soft);
+      background: var(--cream); border-radius: 99px; padding: 1px 8px;
+    }
+    .nav-divider { height: 1px; background: var(--line); margin: 10px 8px; }
+
+    .sidebar-foot {
+      margin-top: auto; padding: 14px; border-radius: 16px;
+      background: var(--sage-soft); color: var(--sage-ink); font-size: .85rem;
+    }
+    .sidebar-foot strong { display: block; font-size: .9rem; margin-bottom: 2px; }
+
+    .topbar { display: none; }
+    .scrim { position: fixed; inset: 0; background: rgba(46, 42, 59, .38); z-index: 40; }
+
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line);
+      background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer;
+    }
+    .close-btn { display: none; }
+
+    .main { padding: clamp(18px, 3vw, 40px); min-width: 0; overflow-x: clip; }
+    .view { max-width: 1120px; margin: 0 auto; }
+
+    /* ---------- Shared components ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow-sm);
+      padding: clamp(18px, 2.6vw, 28px);
+      min-width: 0;
+    }
+    .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+    .btn {
+      min-height: 46px; padding: 0 18px; border-radius: 14px;
+      border: 1px solid transparent; font: inherit; font-weight: 650; color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-lav { background: var(--lav); }
+    .btn-lav:hover { background: #B9A3EA; }
+    .btn-pink { background: var(--pink); }
+    .btn-pink:hover { background: #EDA6C8; }
+    .btn-sage { background: var(--sage); }
+    .btn-sage:hover { background: #A8D2A7; }
+    .btn-ghost { background: transparent; border-color: var(--line); }
+    .btn-ghost:hover { background: var(--cream); }
+    .btn-white { background: #fff; border-color: rgba(46, 42, 59, .08); box-shadow: var(--shadow-sm); }
+    .btn-white:hover { background: var(--cream); }
+
+    .row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .row .btn { flex: 1 1 140px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .field label { font-weight: 650; font-size: .9rem; }
+    input[type="text"], select {
+      width: 100%; min-height: 46px; padding: 0 14px;
+      border-radius: 14px; border: 1.5px solid var(--line);
+      background: #fff; color: var(--ink); font: inherit; font-size: 1rem;
+    }
+    input[type="text"]:focus-visible, select:focus-visible { border-color: var(--lav-ink); outline-offset: 1px; }
+    .inline-form { display: flex; gap: 10px; flex-wrap: wrap; }
+    .inline-form input { flex: 1 1 180px; width: auto; }
+    .form-msg { min-height: 1.4em; margin-top: 8px; font-size: .9rem; color: var(--pink-ink); }
+    .form-msg.ok { color: var(--sage-ink); }
+
+    .bar { height: 12px; border-radius: 99px; background: var(--cream-2); border: 1px solid var(--line); overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--sage), var(--sage-deep)); transition: width .3s ease; }
+
+    /* Previews: placeholders that are not active yet */
+    .preview { border: 2px dashed #D9CBB3; background: transparent; box-shadow: none; }
+    .pill {
+      display: inline-flex; align-items: center; font-size: .75rem; font-weight: 700;
+      padding: 2px 10px; border-radius: 99px; background: var(--cream-2); color: var(--ink-soft);
+    }
+
+    /* ---------- Folder bar ---------- */
+    .folder-bar {
+      max-width: 1120px; margin: 0 auto 18px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .folder-bar label { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--ink-soft); }
+    .folder-bar select { width: auto; min-width: 200px; max-width: 100%; flex: 0 1 280px; }
+
+    /* ---------- Dashboard ---------- */
+    .welcome {
+      position: relative; overflow: hidden;
+      border: 0; border-radius: 32px;
+      background: linear-gradient(120deg, var(--pink-soft) 0%, var(--lav-soft) 70%, #E4EEFB 100%);
+      padding: clamp(22px, 4vw, 40px);
+      display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; justify-content: space-between;
+    }
+    .welcome::after {
+      content: ""; position: absolute; right: -60px; top: -80px; width: 240px; height: 240px;
+      border-radius: 50%; background: rgba(255, 255, 255, .45); pointer-events: none;
+    }
+    .welcome > * { position: relative; z-index: 1; }
+    .welcome p.lead { margin-top: 6px; font-size: 1.05rem; color: #4A4458; max-width: 46ch; }
+    .welcome .summary { margin-top: 12px; font-weight: 650; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin: 18px 0; }
+    .stat { border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .stat-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+    .stat-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+    .quest-row { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); font-size: .92rem; }
+    .quest-box { width: 18px; height: 18px; border-radius: 6px; border: 2px solid #D9CBB3; flex: none; }
+
+    .dash-main { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 18px; align-items: start; }
+    .dash-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+    .practice { padding-bottom: clamp(20px, 3vw, 30px); }
+    .seg { display: inline-flex; padding: 4px; gap: 4px; border-radius: 16px; background: var(--cream-2); }
+    .seg button {
+      min-height: 40px; padding: 0 14px; border: 0; border-radius: 12px; background: transparent;
+      font: inherit; font-weight: 650; color: var(--ink-soft); cursor: pointer;
+    }
+    .seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+    .mode-label { font-size: .9rem; color: var(--ink-soft); margin-bottom: 4px; }
+
+    /* The deck: the one memorable element */
+    .deck { position: relative; max-width: 560px; margin: 22px auto 10px; padding-bottom: 16px; }
+    .deck::before, .deck::after {
+      content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: 16px; border-radius: 28px;
+      border: 2px solid var(--line); background: var(--card); z-index: 0;
+    }
+    .deck::before { transform: translateY(14px) scale(.94); background: var(--sage-soft); border-color: var(--sage); }
+    .deck::after { transform: translateY(7px) scale(.97); background: var(--lav-soft); border-color: var(--lav); }
     .study-card {
-      width: 280px;
-      min-height: 160px;
-      border: 2px solid #a78bfa;
-      border-radius: 16px;
-      background: #f5f3ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      margin: 15px 0;
-      cursor: pointer;
-      font-size: 24px;
-      font-weight: bold;
-      overflow-wrap: anywhere;
+      position: relative; z-index: 1;
+      min-height: 220px; padding: 30px 24px;
+      border-radius: 28px; border: 2px solid var(--pink);
+      background: linear-gradient(165deg, #FFF8FB, var(--pink-soft));
+      box-shadow: var(--shadow-md);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+      text-align: center; cursor: pointer; user-select: none; overflow-wrap: anywhere;
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .study-card:hover { transform: translateY(-2px); }
+    .study-card.is-flipped { border-color: var(--lav-ink); background: linear-gradient(165deg, #FBF9FF, var(--lav-soft)); }
+    .study-card .side-label { font-size: .85rem; font-weight: 650; color: var(--ink-soft); }
+    #study-card-text { font-family: var(--font-display); font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; line-height: 1.2; }
+    .study-card.pop { animation: pop .18s ease; }
+    @keyframes pop { from { transform: scale(.97); opacity: .75; } to { transform: none; opacity: 1; } }
+
+    .counter { text-align: center; font-weight: 650; color: var(--ink-soft); margin: 4px 0 14px; min-height: 1.5em; }
+    .practice .hint { text-align: center; font-size: .9rem; }
+    .practice .rate-hint { margin: 18px 0 10px; font-size: .92rem; }
+    #study-results { margin: 14px 0; font-weight: 700; }
+
+    .big-pct { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 12px; flex-wrap: wrap; }
+    .big-pct strong { font-family: var(--font-display); font-size: 2.4rem; font-weight: 800; line-height: 1; }
+    .stat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0 0; }
+    .stat-list > div { background: var(--cream); border-radius: 16px; padding: 12px 14px; }
+    .stat-list dt { font-size: .85rem; color: var(--ink-soft); }
+    .stat-list dd { margin: 2px 0 0; font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; }
+
+    /* Folders */
+    .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .folder-card {
+      text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+      display: flex; flex-direction: column; gap: 6px; min-width: 0;
+      padding: 16px; border-radius: 20px; border: 2px solid transparent;
+      background: var(--cream); transition: transform .12s, box-shadow .15s;
+    }
+    .folder-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .folder-card[aria-pressed="true"] { border-color: var(--ink); background: #fff; }
+    .fc-icon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 4px; }
+    .tone-0 .fc-icon { background: var(--pink); }
+    .tone-1 .fc-icon { background: var(--lav); }
+    .tone-2 .fc-icon { background: var(--sage); }
+    .fc-name { font-weight: 700; overflow-wrap: anywhere; }
+    .fc-meta { font-size: .85rem; color: var(--ink-soft); }
+    .folder-card .bar { height: 8px; margin-top: 4px; }
+    .tone-0 .bar > span { background: var(--pink); }
+    .tone-1 .bar > span { background: var(--lav); }
+    .folder-card.add {
+      border: 2px dashed #D9CBB3; background: transparent; align-items: center; justify-content: center;
+      text-align: center; min-height: 128px; color: var(--ink-soft); font-weight: 650;
     }
 
-    .study-card:hover {
-      background: #ede9fe;
+    /* ---------- Vocabulary view ---------- */
+    .page-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .page-icon { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; background: var(--lav); flex: none; }
+    .page-icon .ic { width: 26px; height: 26px; }
+    .vocab-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 18px; align-items: start; }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+    .stack h2, .vocab-grid h2 { margin-bottom: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .chip {
+      min-height: 40px; padding: 0 14px; border-radius: 99px; border: 1.5px solid var(--line);
+      background: #fff; font: inherit; font-weight: 650; color: var(--ink); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+    }
+    .chip span.n { font-size: .8rem; color: var(--ink-soft); }
+    .chip[aria-pressed="true"] { background: var(--lav); border-color: var(--lav); }
+    .word-list { display: flex; flex-direction: column; gap: 8px; max-height: 560px; overflow-y: auto; }
+    .word-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-radius: 16px; background: var(--cream); min-width: 0;
+    }
+    .word-row .words { min-width: 0; overflow-wrap: anywhere; }
+    .word-row .en { font-weight: 700; }
+    .word-row .cz { color: var(--ink-soft); }
+    .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; background: var(--cream-2); border: 2px solid #D9CBB3; }
+    .dot.known { background: var(--sage-deep); border-color: var(--sage-deep); }
+    .dot.learning { background: var(--pink); border-color: var(--pink); }
+    .empty { color: var(--ink-soft); padding: 8px 2px; }
+
+    /* ---------- Other views ---------- */
+    .empty-card { text-align: left; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .badge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; width: 100%; margin-top: 4px; }
+    .badge-ph { border-radius: 20px; background: var(--cream); padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--ink-soft); font-weight: 600; font-size: .9rem; }
+    .badge-ph .ic { width: 28px; height: 28px; }
+
+    /* ---------- Tablet and below ---------- */
+    @media (max-width: 1040px) {
+      :root { --sidebar-w: 224px; }
+      .dash-main, .vocab-grid { grid-template-columns: minmax(0, 1fr); }
     }
 
-    .study-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 12px 0;
+    /* ---------- Phone and small tablet: drawer navigation ---------- */
+    @media (max-width: 860px) {
+      .app { grid-template-columns: minmax(0, 1fr); }
+      .topbar {
+        display: flex; align-items: center; gap: 12px;
+        position: sticky; top: 0; z-index: 30;
+        padding: 10px 14px; padding-left: max(14px, env(safe-area-inset-left));
+        background: rgba(251, 246, 238, .92); backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--line);
+      }
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 50;
+        width: min(300px, 86vw); height: auto;
+        transform: translateX(-102%); visibility: hidden;
+        transition: transform .25s ease, visibility 0s linear .25s;
+        box-shadow: var(--shadow-md);
+      }
+      .nav-open .sidebar { transform: none; visibility: visible; transition-delay: 0s; }
+      .close-btn { display: grid; }
+      .main { padding: 16px; padding-right: max(16px, env(safe-area-inset-right)); padding-left: max(16px, env(safe-area-inset-left)); }
+      .folder-bar select { flex: 1 1 200px; }
+      .welcome { border-radius: 26px; }
+
+      /* On small screens the working practice area comes before the preview cards */
+      #view-dashboard { display: flex; flex-direction: column; gap: 16px; }
+      #view-dashboard > * { margin: 0 !important; }
+      #view-dashboard > .welcome { order: 0; }
+      #view-dashboard > .dash-main { order: 1; }
+      #view-dashboard > .folders-section { order: 2; }
+      #view-dashboard > .stats { order: 3; }
     }
 
-    .study-buttons button {
-      padding: 10px 16px;
-      cursor: pointer;
+    @media (max-width: 520px) {
+      .card { border-radius: 24px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .stats .stat:last-child { grid-column: 1 / -1; }
+      .stat { padding: 16px; }
+      .welcome .row { width: 100%; }
+      .stat-list { grid-template-columns: 1fr 1fr; }
+      .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .seg { width: 100%; }
+      .seg button { flex: 1; padding: 0 8px; }
+      .deck { margin-top: 18px; }
+      .study-card { min-height: 190px; }
     }
 
-    #study-results {
-      margin-top: 15px;
-      font-weight: bold;
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
 
-  <h1>🌍 LingoVerse</h1>
-  <p>Your personal language learning adventure.</p>
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18Z"/></symbol>
+      <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/></symbol>
+      <symbol id="i-vocabulary" viewBox="0 0 24 24"><rect x="3" y="7" width="14" height="14" rx="2.5"/><path d="M7 3h11a3 3 0 0 1 3 3v11"/></symbol>
+      <symbol id="i-writing" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+      <symbol id="i-speaking" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></symbol>
+      <symbol id="i-listening" viewBox="0 0 24 24"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="4" height="7" rx="1.5"/><rect x="17" y="14" width="4" height="7" rx="1.5"/></symbol>
+      <symbol id="i-reading" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2Z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7Z"/></symbol>
+      <symbol id="i-grammar" viewBox="0 0 24 24"><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></symbol>
+      <symbol id="i-rewards" viewBox="0 0 24 24"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></symbol>
+      <symbol id="i-companions" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14.2A5.5 5.5 0 0 1 21.5 19.5"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h2"/><path d="M10 12h10"/><circle cx="8" cy="12" r="2"/><path d="M4 18h10"/><path d="M18 18h2"/><circle cx="16" cy="18" r="2"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-redo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    </defs>
+  </svg>
 
-  <h2>Choose your skill</h2>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <button onclick="showSkill('Writing')">✍️ Writing</button>
-  <button onclick="showSkill('Speaking')">🎤 Speaking</button>
-  <button onclick="showSkill('Listening')">🎧 Listening</button>
-  <button onclick="showSkill('Reading')">📖 Reading</button>
-  <button onclick="showSkill('Grammar')">🧩 Grammar</button>
-  <button onclick="showSkill('Vocabulary')">🗂️ Vocabulary</button>
+  <div class="app">
 
-  <hr>
+    <!-- Compact top bar for phones and small tablets -->
+    <header class="topbar">
+      <button type="button" class="icon-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+        <svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <a class="brand" href="#dashboard">
+        <span class="brand-mark"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg></span>
+        <span>LingoVerse</span>
+      </a>
+    </header>
 
-  <h2 id="skill-title">Welcome!</h2>
-  <p id="skill-description">Select a skill to get started.</p>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <a class="brand" href="#dashboard">
+          <span class="brand-mark"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg></span>
+          <span>LingoVerse</span>
+        </a>
+        <button type="button" class="icon-btn close-btn" id="close-btn" aria-label="Close menu">
+          <svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
 
-  <hr>
+      <nav aria-label="Main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="#dashboard" data-view="dashboard"><svg class="ic" aria-hidden="true"><use href="#i-dashboard"/></svg><span>Dashboard</span></a></li>
+          <li><a class="nav-link" href="#vocabulary" data-view="vocabulary"><svg class="ic" aria-hidden="true"><use href="#i-vocabulary"/></svg><span>Vocabulary</span></a></li>
+          <li><a class="nav-link" href="#writing" data-view="writing"><svg class="ic" aria-hidden="true"><use href="#i-writing"/></svg><span>Writing</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#speaking" data-view="speaking"><svg class="ic" aria-hidden="true"><use href="#i-speaking"/></svg><span>Speaking</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#listening" data-view="listening"><svg class="ic" aria-hidden="true"><use href="#i-listening"/></svg><span>Listening</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#reading" data-view="reading"><svg class="ic" aria-hidden="true"><use href="#i-reading"/></svg><span>Reading</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#grammar" data-view="grammar"><svg class="ic" aria-hidden="true"><use href="#i-grammar"/></svg><span>Grammar</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#rewards" data-view="rewards"><svg class="ic" aria-hidden="true"><use href="#i-rewards"/></svg><span>Rewards</span><span class="tag">soon</span></a></li>
+          <li><a class="nav-link" href="#companions" data-view="companions"><svg class="ic" aria-hidden="true"><use href="#i-companions"/></svg><span>Companions</span><span class="tag">soon</span></a></li>
+          <li class="nav-divider" role="presentation"></li>
+          <li><a class="nav-link" href="#settings" data-view="settings"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg><span>Settings</span></a></li>
+        </ul>
+      </nav>
 
-  <h2>📚 My Flashcards</h2>
+      <div class="sidebar-foot">
+        <strong>Saved on this device</strong>
+        Your words, folders and ratings stay in this browser.
+      </div>
+    </aside>
 
-  <h3>📁 My Folders</h3>
-  <input type="text" id="folder-name" placeholder="New folder name">
-  <button onclick="addFolder()">Create Folder</button>
+    <div class="scrim" id="scrim" hidden></div>
 
-  <p>
-    <label for="folder-select">Choose folder:</label>
-    <select id="folder-select" onchange="folderChanged()"></select>
-  </p>
+    <main class="main" id="main">
 
-  <h3>Add New Word</h3>
-  <input type="text" id="english-word" placeholder="English word">
-  <input type="text" id="czech-word" placeholder="Czech translation">
-  <button onclick="addFlashcard()">Add Flashcard</button>
+      <!-- Folder picker, shared by Dashboard and Vocabulary -->
+      <div class="folder-bar" id="folder-bar">
+        <label for="folder-select"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg>Choose folder:</label>
+        <select id="folder-select"></select>
+      </div>
 
-  <h3>My Vocabulary</h3>
-  <div id="flashcard-list"></div>
+      <!-- ========== Dashboard ========== -->
+      <section class="view" id="view-dashboard" aria-labelledby="greeting">
 
-  <hr>
+        <div class="card welcome">
+          <div>
+            <h1 id="greeting">Welcome back!</h1>
+            <p class="lead">Your personal language learning adventure.</p>
+            <p class="summary" id="welcome-summary"></p>
+          </div>
+          <div class="row">
+            <button type="button" class="btn btn-white" id="practice-now">
+              <svg class="ic" aria-hidden="true"><use href="#i-vocabulary"/></svg>Practice now
+            </button>
+            <button type="button" class="btn btn-white" data-goto="vocabulary" data-focus="english-word">
+              <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add words
+            </button>
+          </div>
+        </div>
 
-  <h2>🃏 Study Flashcards</h2>
-  <p>Click the card to reveal the translation.</p>
+        <div class="stats">
+          <div class="card stat preview" aria-label="XP, preview only">
+            <div class="stat-top">
+              <span class="stat-title"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg>XP</span>
+              <span class="pill">Preview</span>
+            </div>
+            <div class="stat-value">0</div>
+            <div class="bar" aria-hidden="true"><span style="width:0"></span></div>
+            <p class="muted" style="font-size:.88rem">XP isn't earned yet.</p>
+          </div>
 
-  <div id="study-card" class="study-card"
-       role="button" tabindex="0"
-       onclick="flipCard()"
-       onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flipCard(); }">
-    Add some words to start!
+          <div class="card stat preview" aria-label="Level, preview only">
+            <div class="stat-top">
+              <span class="stat-title"><svg class="ic" aria-hidden="true"><use href="#i-rewards"/></svg>Level</span>
+              <span class="pill">Preview</span>
+            </div>
+            <div class="stat-value">1</div>
+            <p class="muted" style="font-size:.88rem">Levels will unlock with XP.</p>
+          </div>
+
+          <div class="card stat preview" aria-label="Daily quests, preview only">
+            <div class="stat-top">
+              <span class="stat-title"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Daily quests</span>
+              <span class="pill">Preview</span>
+            </div>
+            <div class="quest-row"><span class="quest-box"></span>Review 10 words</div>
+            <div class="quest-row"><span class="quest-box"></span>Clear a difficult word</div>
+          </div>
+        </div>
+
+        <div class="dash-main">
+          <article class="card practice" id="practice-card" aria-labelledby="practice-title">
+            <div class="card-head">
+              <div>
+                <h2 id="practice-title">Quick practice</h2>
+                <p class="muted">Folder: <strong id="practice-folder-name">General</strong></p>
+              </div>
+              <div class="seg" role="group" aria-label="Choose what you want to practice">
+                <button type="button" id="mode-all" aria-pressed="true">All Words</button>
+                <button type="button" id="mode-difficult" aria-pressed="false">Difficult Words</button>
+              </div>
+            </div>
+            <p class="mode-label" id="practice-mode-label">Mode: All Words</p>
+
+            <div class="deck">
+              <div id="study-card" class="study-card" role="button" tabindex="0" aria-describedby="flip-hint">
+                <span class="side-label" id="study-card-label">English</span>
+                <span id="study-card-text">Add some words to start!</span>
+              </div>
+            </div>
+            <p class="muted hint" id="flip-hint">Click the card to reveal the translation.</p>
+            <p class="counter" id="card-counter"></p>
+
+            <div class="row">
+              <button type="button" class="btn btn-ghost" id="prev-btn"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg>Previous</button>
+              <button type="button" class="btn btn-ghost" id="next-btn">Next<svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+            </div>
+
+            <p class="muted rate-hint">Reveal the translation, then choose how well you know the word.</p>
+            <div class="row">
+              <button type="button" class="btn btn-sage" id="know-btn"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>I Know It</button>
+              <button type="button" class="btn btn-pink" id="learning-btn"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg>Still Learning</button>
+            </div>
+
+            <p id="study-results">Known: 0 | Still learning: 0</p>
+            <button type="button" class="btn btn-ghost" id="restart-btn"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg>Restart Session</button>
+          </article>
+
+          <div class="dash-side">
+            <article class="card" aria-labelledby="progress-title">
+              <h2 id="progress-title">Study progress</h2>
+              <p class="muted">Folder: <strong id="progress-folder-name">General</strong></p>
+              <div class="big-pct"><strong id="pct-known">0%</strong><span class="muted">of words known</span></div>
+              <div class="bar" id="progress-bar" role="progressbar" aria-label="Words known in this folder" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
+              <dl class="stat-list">
+                <div><dt>Known</dt><dd id="stat-known">0</dd></div>
+                <div><dt>Still learning</dt><dd id="stat-learning">0</dd></div>
+                <div><dt>Not rated yet</dt><dd id="stat-unrated">0</dd></div>
+                <div><dt>Total words</dt><dd id="stat-total">0</dd></div>
+              </dl>
+            </article>
+          </div>
+        </div>
+
+        <section class="card folders-section" style="margin-top:18px" aria-labelledby="folders-title">
+          <div class="card-head">
+            <h2 id="folders-title">Vocabulary folders</h2>
+            <button type="button" class="btn btn-ghost" data-goto="vocabulary">Manage words</button>
+          </div>
+          <div class="folder-grid" id="folder-cards"></div>
+        </section>
+      </section>
+
+      <!-- ========== Vocabulary ========== -->
+      <section class="view" id="view-vocabulary" aria-labelledby="vocab-title" hidden>
+        <header class="page-head">
+          <span class="page-icon"><svg class="ic" aria-hidden="true"><use href="#i-vocabulary"/></svg></span>
+          <div>
+            <h1 id="vocab-title">My Flashcards</h1>
+            <p class="muted">Folder: <strong id="vocab-folder-name">General</strong></p>
+          </div>
+        </header>
+
+        <div class="vocab-grid">
+          <div class="stack">
+            <article class="card" aria-labelledby="folders-h">
+              <h2 id="folders-h">My Folders</h2>
+              <div class="inline-form">
+                <label for="folder-name" class="sr-only">New folder name</label>
+                <input type="text" id="folder-name" placeholder="New folder name" autocomplete="off">
+                <button type="button" class="btn btn-lav" id="add-folder-btn"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Create Folder</button>
+              </div>
+              <p class="form-msg" id="folder-message" role="status"></p>
+              <div class="chips" id="folder-chips"></div>
+            </article>
+
+            <article class="card" aria-labelledby="addword-h">
+              <h2 id="addword-h">Add New Word</h2>
+              <div class="field">
+                <label for="english-word">English word</label>
+                <input type="text" id="english-word" placeholder="English word" autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="czech-word">Czech translation</label>
+                <input type="text" id="czech-word" placeholder="Czech translation" autocomplete="off">
+              </div>
+              <button type="button" class="btn btn-lav" id="add-word-btn"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add Flashcard</button>
+              <p class="form-msg" id="word-message" role="status"></p>
+            </article>
+          </div>
+
+          <article class="card" aria-labelledby="myvocab-h">
+            <h2 id="myvocab-h">My Vocabulary</h2>
+            <div class="word-list" id="flashcard-list" role="list"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ========== Skill pages (placeholders) ========== -->
+      <section class="view" id="view-skill" aria-labelledby="skill-title" hidden>
+        <header class="page-head">
+          <span class="page-icon"><svg class="ic" aria-hidden="true"><use id="skill-icon" href="#i-writing"/></svg></span>
+          <div>
+            <h1 id="skill-title">Welcome!</h1>
+            <p class="muted" id="skill-description">Select a skill to get started.</p>
+          </div>
+        </header>
+        <article class="card preview empty-card">
+          <span class="pill">Preview</span>
+          <h2>Activities for this skill aren't ready yet</h2>
+          <p class="muted">Vocabulary practice works today, so you can keep learning words in the meantime.</p>
+          <button type="button" class="btn btn-lav" data-goto="vocabulary">Open vocabulary</button>
+        </article>
+      </section>
+
+      <!-- ========== Rewards ========== -->
+      <section class="view" id="view-rewards" aria-labelledby="rewards-title" hidden>
+        <header class="page-head">
+          <span class="page-icon" style="background:var(--pink)"><svg class="ic" aria-hidden="true"><use href="#i-rewards"/></svg></span>
+          <div>
+            <h1 id="rewards-title">Rewards</h1>
+            <p class="muted">Badges and milestones will appear here.</p>
+          </div>
+        </header>
+        <article class="card preview empty-card">
+          <span class="pill">Preview</span>
+          <h2>Nothing to unlock yet</h2>
+          <div class="badge-grid" aria-hidden="true">
+            <div class="badge-ph"><svg class="ic"><use href="#i-lock"/></svg>First 10 words</div>
+            <div class="badge-ph"><svg class="ic"><use href="#i-lock"/></svg>Folder builder</div>
+            <div class="badge-ph"><svg class="ic"><use href="#i-lock"/></svg>Difficult words cleared</div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ========== Companions ========== -->
+      <section class="view" id="view-companions" aria-labelledby="companions-title" hidden>
+        <header class="page-head">
+          <span class="page-icon" style="background:var(--sage)"><svg class="ic" aria-hidden="true"><use href="#i-companions"/></svg></span>
+          <div>
+            <h1 id="companions-title">Companions</h1>
+            <p class="muted">Study companions will join you here.</p>
+          </div>
+        </header>
+        <article class="card preview empty-card">
+          <span class="pill">Preview</span>
+          <h2>No companions yet</h2>
+          <p class="muted">This page is a placeholder for now.</p>
+        </article>
+      </section>
+
+      <!-- ========== Settings ========== -->
+      <section class="view" id="view-settings" aria-labelledby="settings-title" hidden>
+        <header class="page-head">
+          <span class="page-icon" style="background:var(--cream-2)"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg></span>
+          <div>
+            <h1 id="settings-title">Settings</h1>
+            <p class="muted">Options for LingoVerse.</p>
+          </div>
+        </header>
+        <article class="card empty-card">
+          <h2>Where your data lives</h2>
+          <p class="muted">Your flashcards, folders and ratings are stored in this browser on this device. They aren't sent anywhere and don't sync to other devices.</p>
+        </article>
+        <article class="card preview empty-card" style="margin-top:18px">
+          <span class="pill">Preview</span>
+          <h2>More settings are coming</h2>
+          <p class="muted">Daily goals and appearance options will appear here.</p>
+        </article>
+      </section>
+
+    </main>
   </div>
-
-  <p id="card-counter"></p>
-
-  <div class="study-buttons">
-    <button onclick="previousCard()">⬅️ Previous</button>
-    <button onclick="nextCard()">Next ➡️</button>
-  </div>
-
-  <h3>🧠 Learning Mode</h3>
-  
-  <p>Choose what you want to practice:</p>
-<button onclick="setPracticeMode(false)">📚 All Words</button>
-<button onclick="setPracticeMode(true)">🔄 Difficult Words</button>
-<p id="practice-mode-label">Mode: All Words</p>
-  <p>Reveal the translation, then choose how well you know the word.</p>
-
-  <div class="study-buttons">
-    <button onclick="markCard(true)">✅ I Know It</button>
-    <button onclick="markCard(false)">🔄 Still Learning</button>
-  </div>
-
-  <p id="study-results">Known: 0 | Still learning: 0</p>
-
-  <button onclick="restartStudy()">🔁 Restart Session</button>
-
-  <hr>
-
-  <h2>My Progress</h2>
-  <p>⭐ XP: 0</p>
-  <p>🏆 Level: 1</p>
 
   <script>
-    function showSkill(skill) {
-      document.getElementById("skill-title").textContent = skill;
-      document.getElementById("skill-description").textContent =
-        "Welcome to your " + skill + " practice!";
-    }
+    (function () {
+      "use strict";
 
-    const flashcards = JSON.parse(
-      localStorage.getItem("lingoverse-flashcards") || "[]"
-    );
+      /* ---------- Saved data (same localStorage keys as before) ---------- */
+      var KEY_CARDS = "lingoverse-flashcards";
+      var KEY_FOLDERS = "lingoverse-folders";
+      var KEY_RATINGS = "lingoverse-study-ratings";
 
-    let folders = JSON.parse(
-      localStorage.getItem("lingoverse-folders") || '["General"]'
-    );
+      function load(key, fallback, isValid) {
+        try {
+          var raw = localStorage.getItem(key);
+          if (!raw) return fallback;
+          var value = JSON.parse(raw);
+          return isValid(value) ? value : fallback;
+        } catch (e) {
+          return fallback;
+        }
+      }
+      function save(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable */ }
+      }
 
-    if (!folders.includes("General")) {
-      folders.unshift("General");
-    }
+      const flashcards = load(KEY_CARDS, [], Array.isArray);
 
-    let currentCardIndex = 0;
-    let isFlipped = false;
-    let difficultOnly = false;
+      let folders = load(KEY_FOLDERS, ["General"], Array.isArray);
+      if (!folders.includes("General")) {
+        folders.unshift("General");
+      }
 
-    let knownCards = 0;
-let learningCards = 0;
+      let currentCardIndex = 0;
+      let isFlipped = false;
+      let difficultOnly = false;
 
-let sessionRatings = JSON.parse(
-  localStorage.getItem("lingoverse-study-ratings") || "{}"
-);
+      let knownCards = 0;
+      let learningCards = 0;
+      let totalCards = 0;
 
-function saveStudyRatings() {
-  localStorage.setItem(
-    "lingoverse-study-ratings",
-    JSON.stringify(sessionRatings)
-  );
-}
-
-function updateStudyCounts() {
-  knownCards = 0;
-  learningCards = 0;
-
-  getSelectedCards().forEach(function(card) {
-    const cardKey = flashcards.indexOf(card);
-    const rating = sessionRatings[cardKey];
-
-    if (rating === "known") knownCards++;
-    if (rating === "learning") learningCards++;
-  });
-
-  updateStudyResults();
-}
-    function saveFolders() {
-      localStorage.setItem(
-        "lingoverse-folders",
-        JSON.stringify(folders)
-      );
-    }
-
-    function updateFolderSelect() {
-      const select = document.getElementById("folder-select");
-      const previous = select.value;
-      select.innerHTML = "";
-
-      folders.forEach(function(folder) {
-        const option = document.createElement("option");
-        option.value = folder;
-        option.textContent = folder;
-        select.appendChild(option);
+      let sessionRatings = load(KEY_RATINGS, {}, function (v) {
+        return v && typeof v === "object" && !Array.isArray(v);
       });
 
-      if (folders.includes(previous)) {
-        select.value = previous;
+      /* ---------- Helpers ---------- */
+      function $(id) { return document.getElementById(id); }
+      var SVGNS = "http://www.w3.org/2000/svg";
+
+      function icon(name) {
+        var svg = document.createElementNS(SVGNS, "svg");
+        svg.setAttribute("class", "ic");
+        svg.setAttribute("aria-hidden", "true");
+        var use = document.createElementNS(SVGNS, "use");
+        use.setAttribute("href", "#i-" + name);
+        svg.appendChild(use);
+        return svg;
       }
-    }
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+      function wordsLabel(n) { return n + (n === 1 ? " word" : " words"); }
 
-    function addFolder() {
-      const input = document.getElementById("folder-name");
-      const name = input.value.trim();
+      var folderSelect = $("folder-select");
+      var cardEl = $("study-card");
 
-      if (name === "") {
-        alert("Please enter a folder name!");
-        return;
+      function saveStudyRatings() { save(KEY_RATINGS, sessionRatings); }
+      function saveFolders() { save(KEY_FOLDERS, folders); }
+
+      /* ---------- Study counts and progress ---------- */
+      function updateStudyCounts() {
+        knownCards = 0;
+        learningCards = 0;
+
+        var selected = getSelectedCards();
+        totalCards = selected.length;
+
+        selected.forEach(function (card) {
+          var cardKey = flashcards.indexOf(card);
+          var rating = sessionRatings[cardKey];
+
+          if (rating === "known") knownCards++;
+          if (rating === "learning") learningCards++;
+        });
+
+        updateStudyResults();
       }
 
-      if (folders.some(folder =>
-        folder.toLowerCase() === name.toLowerCase()
-      )) {
-        alert("This folder already exists!");
-        return;
+      function updateStudyResults() {
+        $("study-results").textContent =
+          "Known: " + knownCards + " | Still learning: " + learningCards;
+
+        var pct = totalCards ? Math.round((knownCards / totalCards) * 100) : 0;
+        $("pct-known").textContent = pct + "%";
+        $("progress-fill").style.width = pct + "%";
+        $("progress-bar").setAttribute("aria-valuenow", String(pct));
+        $("stat-known").textContent = knownCards;
+        $("stat-learning").textContent = learningCards;
+        $("stat-unrated").textContent = Math.max(0, totalCards - knownCards - learningCards);
+        $("stat-total").textContent = totalCards;
       }
 
-      folders.push(name);
+      /* ---------- Folders ---------- */
+      function updateFolderSelect() {
+        var previous = folderSelect.value;
+        folderSelect.innerHTML = "";
+
+        folders.forEach(function (folder) {
+          var option = document.createElement("option");
+          option.value = folder;
+          option.textContent = folder;
+          folderSelect.appendChild(option);
+        });
+
+        if (folders.includes(previous)) {
+          folderSelect.value = previous;
+        }
+      }
+
+      function folderStats() {
+        var stats = Object.create(null);
+        folders.forEach(function (f) { stats[f] = { total: 0, known: 0 }; });
+        flashcards.forEach(function (card, i) {
+          var s = stats[card.folder || "General"];
+          if (!s) return;
+          s.total++;
+          if (sessionRatings[i] === "known") s.known++;
+        });
+        return stats;
+      }
+
+      function renderFolders() {
+        var stats = folderStats();
+        var selected = folderSelect.value;
+
+        // Dashboard folder cards
+        var grid = $("folder-cards");
+        grid.textContent = "";
+        folders.forEach(function (name, i) {
+          var s = stats[name];
+          var pct = s.total ? Math.round((s.known / s.total) * 100) : 0;
+
+          var btn = el("button", "folder-card tone-" + (i % 3));
+          btn.type = "button";
+          btn.dataset.folder = name;
+          btn.setAttribute("aria-pressed", name === selected ? "true" : "false");
+
+          var iconBox = el("span", "fc-icon");
+          iconBox.appendChild(icon("folder"));
+          btn.appendChild(iconBox);
+          btn.appendChild(el("span", "fc-name", name));
+          btn.appendChild(el("span", "fc-meta", wordsLabel(s.total) + ", " + pct + "% known"));
+
+          var bar = el("span", "bar");
+          bar.setAttribute("aria-hidden", "true");
+          var fill = el("span");
+          fill.style.width = pct + "%";
+          bar.appendChild(fill);
+          btn.appendChild(bar);
+
+          grid.appendChild(btn);
+        });
+
+        var addTile = el("button", "folder-card add");
+        addTile.type = "button";
+        addTile.appendChild(icon("plus"));
+        addTile.appendChild(el("span", "", "New folder"));
+        addTile.addEventListener("click", function () { go("vocabulary", "folder-name"); });
+        grid.appendChild(addTile);
+
+        // Vocabulary folder chips
+        var chips = $("folder-chips");
+        chips.textContent = "";
+        folders.forEach(function (name) {
+          var chip = el("button", "chip");
+          chip.type = "button";
+          chip.dataset.folder = name;
+          chip.setAttribute("aria-pressed", name === selected ? "true" : "false");
+          chip.appendChild(el("span", "", name));
+          chip.appendChild(el("span", "n", String(stats[name].total)));
+          chips.appendChild(chip);
+        });
+
+        // Names and summary
+        $("practice-folder-name").textContent = selected;
+        $("progress-folder-name").textContent = selected;
+        $("vocab-folder-name").textContent = selected;
+        $("welcome-summary").textContent =
+          wordsLabel(flashcards.length) + " in " +
+          folders.length + (folders.length === 1 ? " folder" : " folders") + ".";
+      }
+
+      function selectFolder(name) {
+        folderSelect.value = name;
+        folderChanged();
+      }
+
+      function addFolder() {
+        var input = $("folder-name");
+        var msg = $("folder-message");
+        var name = input.value.trim();
+
+        msg.className = "form-msg";
+        if (name === "") {
+          msg.textContent = "Enter a folder name.";
+          return;
+        }
+
+        if (folders.some(function (folder) {
+          return folder.toLowerCase() === name.toLowerCase();
+        })) {
+          msg.textContent = "This folder already exists.";
+          return;
+        }
+
+        folders.push(name);
+        saveFolders();
+        updateFolderSelect();
+
+        folderSelect.value = name;
+        input.value = "";
+        folderChanged();
+
+        msg.className = "form-msg ok";
+        msg.textContent = "Folder created.";
+      }
+
+      /* ---------- Flashcards ---------- */
+      function getSelectedCards() {
+        var selectedFolder = folderSelect.value;
+
+        return flashcards.filter(function (card) {
+          return (card.folder || "General") === selectedFolder;
+        });
+      }
+
+      function getPracticeCards() {
+        var cards = getSelectedCards();
+
+        if (!difficultOnly) {
+          return cards;
+        }
+
+        return cards.filter(function (card) {
+          var key = flashcards.indexOf(card);
+          return sessionRatings[key] === "learning";
+        });
+      }
+
+      function showFlashcards() {
+        var list = $("flashcard-list");
+        list.innerHTML = "";
+
+        var visibleCards = getSelectedCards();
+
+        if (visibleCards.length === 0) {
+          list.appendChild(el("p", "empty", "No words in this folder yet."));
+          return;
+        }
+
+        visibleCards.forEach(function (card) {
+          var rating = sessionRatings[flashcards.indexOf(card)];
+          var row = el("div", "word-row");
+          row.setAttribute("role", "listitem");
+
+          var dot = el("span", "dot" + (rating === "known" ? " known" : rating === "learning" ? " learning" : ""));
+          row.appendChild(dot);
+          row.appendChild(el("span", "sr-only", rating === "known" ? "Known: " : rating === "learning" ? "Still learning: " : "Not rated: "));
+
+          var words = el("div", "words");
+          words.appendChild(el("span", "en", card.english));
+          words.appendChild(el("span", "cz", " — " + card.czech));
+          row.appendChild(words);
+
+          list.appendChild(row);
+        });
+      }
+
+      function addFlashcard() {
+        var english = $("english-word").value.trim();
+        var czech = $("czech-word").value.trim();
+        var folder = folderSelect.value;
+        var msg = $("word-message");
+
+        msg.className = "form-msg";
+        if (english === "" || czech === "") {
+          msg.textContent = "Fill in both fields to add a word.";
+          return;
+        }
+
+        flashcards.push({
+          english: english,
+          czech: czech,
+          folder: folder
+        });
+
+        save(KEY_CARDS, flashcards);
+
+        $("english-word").value = "";
+        $("czech-word").value = "";
+
+        showFlashcards();
+        showStudyCard();
+        updateStudyCounts();
+        renderFolders();
+
+        msg.className = "form-msg ok";
+        msg.textContent = "Added to " + folder + ".";
+        $("english-word").focus();
+      }
+
+      function folderChanged() {
+        currentCardIndex = 0;
+        isFlipped = false;
+        restartStudy();
+        showFlashcards();
+        showStudyCard();
+        renderFolders();
+      }
+
+      /* ---------- Practice ---------- */
+      function setPracticeMode(onlyDifficult) {
+        difficultOnly = onlyDifficult;
+        currentCardIndex = 0;
+        isFlipped = false;
+
+        $("practice-mode-label").textContent =
+          onlyDifficult ? "Mode: Difficult Words" : "Mode: All Words";
+        $("mode-all").setAttribute("aria-pressed", onlyDifficult ? "false" : "true");
+        $("mode-difficult").setAttribute("aria-pressed", onlyDifficult ? "true" : "false");
+
+        showStudyCard();
+      }
+
+      function showStudyCard() {
+        var cards = getPracticeCards();
+        var text = $("study-card-text");
+        var label = $("study-card-label");
+        var counter = $("card-counter");
+
+        if (cards.length === 0) {
+          text.textContent = difficultOnly
+            ? "No difficult words to practice! 🎉"
+            : "Add some words to start!";
+          label.textContent = "";
+          counter.textContent = "0 / 0";
+          cardEl.classList.remove("is-flipped");
+          return;
+        }
+
+        if (currentCardIndex >= cards.length) {
+          currentCardIndex = 0;
+        }
+
+        var card = cards[currentCardIndex];
+
+        text.textContent = isFlipped ? card.czech : card.english;
+        label.textContent = isFlipped ? "Czech" : "English";
+        cardEl.classList.toggle("is-flipped", isFlipped);
+
+        counter.textContent = (currentCardIndex + 1) + " / " + cards.length;
+
+        cardEl.classList.remove("pop");
+        void cardEl.offsetWidth;
+        cardEl.classList.add("pop");
+      }
+
+      function flipCard() {
+        if (getPracticeCards().length === 0) return;
+
+        isFlipped = !isFlipped;
+        showStudyCard();
+      }
+
+      function nextCard() {
+        var cards = getPracticeCards();
+
+        if (cards.length === 0) return;
+
+        currentCardIndex = (currentCardIndex + 1) % cards.length;
+        isFlipped = false;
+        showStudyCard();
+      }
+
+      function previousCard() {
+        var cards = getPracticeCards();
+
+        if (cards.length === 0) return;
+
+        currentCardIndex =
+          (currentCardIndex - 1 + cards.length) % cards.length;
+
+        isFlipped = false;
+        showStudyCard();
+      }
+
+      function markCard(isKnown) {
+        var cards = getPracticeCards();
+
+        if (cards.length === 0) return;
+
+        var card = cards[currentCardIndex];
+        var cardKey = flashcards.indexOf(card);
+
+        sessionRatings[cardKey] = isKnown ? "known" : "learning";
+
+        saveStudyRatings();
+        updateStudyCounts();
+        renderFolders();
+        showFlashcards();
+
+        if (difficultOnly && isKnown) {
+          var remainingCards = getPracticeCards();
+
+          if (currentCardIndex >= remainingCards.length) {
+            currentCardIndex = 0;
+          }
+
+          isFlipped = false;
+          showStudyCard();
+        } else {
+          nextCard();
+        }
+      }
+
+      function restartStudy() {
+        currentCardIndex = 0;
+        isFlipped = false;
+
+        updateStudyCounts();
+        showStudyCard();
+      }
+
+      /* ---------- Skill pages ---------- */
+      function showSkill(skill) {
+        $("skill-title").textContent = skill;
+        $("skill-description").textContent =
+          "Welcome to your " + skill + " practice!";
+        $("skill-icon").setAttribute("href", "#i-" + skill.toLowerCase());
+      }
+
+      /* ---------- Navigation ---------- */
+      var VIEWS = {
+        dashboard: "view-dashboard", vocabulary: "view-vocabulary",
+        writing: "view-skill", speaking: "view-skill", listening: "view-skill",
+        reading: "view-skill", grammar: "view-skill",
+        rewards: "view-rewards", companions: "view-companions", settings: "view-settings"
+      };
+      var SKILLS = {
+        writing: "Writing", speaking: "Speaking", listening: "Listening",
+        reading: "Reading", grammar: "Grammar"
+      };
+      var TITLES = {
+        dashboard: "Dashboard", vocabulary: "Vocabulary", rewards: "Rewards",
+        companions: "Companions", settings: "Settings"
+      };
+
+      var menuBtn = $("menu-btn");
+      var scrim = $("scrim");
+      var sidebar = $("sidebar");
+
+      function navigate(name) {
+        if (!Object.prototype.hasOwnProperty.call(VIEWS, name)) name = "dashboard";
+
+        document.querySelectorAll(".view").forEach(function (view) {
+          view.hidden = view.id !== VIEWS[name];
+        });
+
+        document.querySelectorAll(".nav-link").forEach(function (link) {
+          if (link.dataset.view === name) {
+            link.setAttribute("aria-current", "page");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        });
+
+        if (SKILLS[name]) showSkill(SKILLS[name]);
+
+        $("folder-bar").hidden = !(name === "dashboard" || name === "vocabulary");
+        document.title = "LingoVerse – " + (SKILLS[name] || TITLES[name]);
+        closeNav(false);
+        window.scrollTo(0, 0);
+      }
+
+      function go(name, focusId) {
+        if (location.hash.slice(1) === name) {
+          navigate(name);
+        } else {
+          location.hash = name;
+        }
+        if (focusId) {
+          setTimeout(function () { var t = $(focusId); if (t) t.focus(); }, 60);
+        }
+      }
+
+      function openNav() {
+        document.body.classList.add("nav-open");
+        menuBtn.setAttribute("aria-expanded", "true");
+        menuBtn.setAttribute("aria-label", "Close menu");
+        scrim.hidden = false;
+        var target = sidebar.querySelector('.nav-link[aria-current="page"]') || sidebar.querySelector(".nav-link");
+        if (target) target.focus();
+      }
+
+      function closeNav(returnFocus) {
+        if (!document.body.classList.contains("nav-open")) return;
+        document.body.classList.remove("nav-open");
+        menuBtn.setAttribute("aria-expanded", "false");
+        menuBtn.setAttribute("aria-label", "Open menu");
+        scrim.hidden = true;
+        if (returnFocus) menuBtn.focus();
+      }
+
+      /* ---------- Events ---------- */
+      folderSelect.addEventListener("change", folderChanged);
+
+      $("add-folder-btn").addEventListener("click", addFolder);
+      $("folder-name").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); addFolder(); }
+      });
+
+      $("add-word-btn").addEventListener("click", addFlashcard);
+      ["english-word", "czech-word"].forEach(function (id) {
+        $(id).addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); addFlashcard(); }
+        });
+      });
+
+      $("mode-all").addEventListener("click", function () { setPracticeMode(false); });
+      $("mode-difficult").addEventListener("click", function () { setPracticeMode(true); });
+
+      cardEl.addEventListener("click", flipCard);
+      cardEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flipCard(); }
+      });
+
+      $("prev-btn").addEventListener("click", previousCard);
+      $("next-btn").addEventListener("click", nextCard);
+      $("know-btn").addEventListener("click", function () { markCard(true); });
+      $("learning-btn").addEventListener("click", function () { markCard(false); });
+      $("restart-btn").addEventListener("click", restartStudy);
+
+      $("practice-now").addEventListener("click", function () {
+        var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        $("practice-card").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        cardEl.focus({ preventScroll: true });
+      });
+
+      $("folder-cards").addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-folder]");
+        if (btn) selectFolder(btn.dataset.folder);
+      });
+      $("folder-chips").addEventListener("click", function (e) {
+        var btn = e.target.closest("button[data-folder]");
+        if (btn) selectFolder(btn.dataset.folder);
+      });
+
+      document.querySelectorAll("[data-goto]").forEach(function (btn) {
+        btn.addEventListener("click", function () { go(btn.dataset.goto, btn.dataset.focus); });
+      });
+
+      document.querySelectorAll(".nav-link, .brand").forEach(function (link) {
+        link.addEventListener("click", function () { closeNav(false); });
+      });
+
+      menuBtn.addEventListener("click", function () {
+        if (document.body.classList.contains("nav-open")) closeNav(true); else openNav();
+      });
+      $("close-btn").addEventListener("click", function () { closeNav(true); });
+      scrim.addEventListener("click", function () { closeNav(true); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeNav(true);
+      });
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 860) closeNav(false);
+      });
+      window.addEventListener("hashchange", function () { navigate(location.hash.slice(1)); });
+
+      /* ---------- Start ---------- */
+      var hour = new Date().getHours();
+      $("greeting").textContent =
+        (hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 18 ? "Good afternoon" : "Good evening") + "!";
+
       saveFolders();
       updateFolderSelect();
-
-      document.getElementById("folder-select").value = name;
-      input.value = "";
       folderChanged();
-    }
-function setPracticeMode(onlyDifficult) {
-  difficultOnly = onlyDifficult;
-  currentCardIndex = 0;
-  isFlipped = false;
-
-  document.getElementById("practice-mode-label").textContent =
-    onlyDifficult ? "Mode: Difficult Words" : "Mode: All Words";
-
-  showStudyCard();
-}
-    function showStudyCard() {
-  const cards = getPracticeCards();
-
-  const cardElement = document.getElementById("study-card");
-  const counter = document.getElementById("card-counter");
-
-  if (cards.length === 0) {
-    cardElement.textContent = difficultOnly
-      ? "No difficult words to practice! 🎉"
-      : "Add some words to start!";
-
-    counter.textContent = "0 / 0";
-    return;
-  }
-
-  if (currentCardIndex >= cards.length) {
-    currentCardIndex = 0;
-  }
-
-  const card = cards[currentCardIndex];
-
-  cardElement.textContent =
-    isFlipped ? card.czech : card.english;
-
-  counter.textContent =
-    (currentCardIndex + 1) + " / " + cards.length;
-}
-
-    function getSelectedCards() {
-      const selectedFolder =
-        document.getElementById("folder-select").value;
-
-      return flashcards.filter(function(card) {
-        return (card.folder || "General") === selectedFolder;
-      });
-    }
-
-    function showFlashcards() {
-      const list = document.getElementById("flashcard-list");
-      list.innerHTML = "";
-
-      const visibleCards = getSelectedCards();
-
-      if (visibleCards.length === 0) {
-        list.textContent = "No words in this folder yet.";
-        return;
-      }
-
-      visibleCards.forEach(function(card) {
-        const item = document.createElement("p");
-        item.textContent = card.english + " — " + card.czech;
-        list.appendChild(item);
-      });
-    }
-
-    function addFlashcard() {
-      const english =
-        document.getElementById("english-word").value.trim();
-
-      const czech =
-        document.getElementById("czech-word").value.trim();
-
-      const folder =
-        document.getElementById("folder-select").value;
-
-      if (english === "" || czech === "") {
-        alert("Please fill in both fields!");
-        return;
-      }
-
-      flashcards.push({
-        english: english,
-        czech: czech,
-        folder: folder
-      });
-
-      localStorage.setItem(
-        "lingoverse-flashcards",
-        JSON.stringify(flashcards)
-      );
-
-      document.getElementById("english-word").value = "";
-      document.getElementById("czech-word").value = "";
-
-      showFlashcards();
-      showStudyCard();
-    }
-
-    function folderChanged() {
-      currentCardIndex = 0;
-      isFlipped = false;
-      restartStudy();
-      showFlashcards();
-      showStudyCard();
-    }
-
-    function flipCard() {
-      if (getPracticeCards().length === 0) return;
-
-      isFlipped = !isFlipped;
-      showStudyCard();
-    }
-
-   function getPracticeCards() {
-  const cards = getSelectedCards();
-
-  if (!difficultOnly) {
-    return cards;
-  }
-
-  return cards.filter(function(card) {
-    const key = flashcards.indexOf(card);
-    return sessionRatings[key] === "learning";
-  });
-}
-
-function nextCard() {
-  const cards = getPracticeCards();
-
-  if (cards.length === 0) return;
-
-  currentCardIndex = (currentCardIndex + 1) % cards.length;
-  isFlipped = false;
-  showStudyCard();
-}
-
-function previousCard() {
-  const cards = getPracticeCards();
-
-  if (cards.length === 0) return;
-
-  currentCardIndex =
-    (currentCardIndex - 1 + cards.length) % cards.length;
-
-  isFlipped = false;
-  showStudyCard();
-}
-    function updateStudyResults() {
-      document.getElementById("study-results").textContent =
-        "Known: " + knownCards +
-        " | Still learning: " + learningCards;
-    }
-
-   function markCard(isKnown) {
-  const cards = getPracticeCards();
-
-  if (cards.length === 0) return;
-
-  const card = cards[currentCardIndex];
-  const cardKey = flashcards.indexOf(card);
-
-  sessionRatings[cardKey] = isKnown ? "known" : "learning";
-
-  saveStudyRatings();
-  updateStudyCounts();
-
-  if (difficultOnly && isKnown) {
-    const remainingCards = getPracticeCards();
-
-    if (currentCardIndex >= remainingCards.length) {
-      currentCardIndex = 0;
-    }
-
-    isFlipped = false;
-    showStudyCard();
-  } else {
-    nextCard();
-  }
-}
-    
-function restartStudy() {
-  currentCardIndex = 0;
-  isFlipped = false;
-
-  updateStudyCounts();
-  showStudyCard();
-}
-
-    saveFolders();
-    updateFolderSelect();
-    folderChanged();
+      navigate(location.hash.slice(1));
+    })();
   </script>
 
 </body>
