@@ -238,14 +238,7 @@ function setPracticeMode(onlyDifficult) {
   showStudyCard();
 }
     function showStudyCard() {
-  const allCards = getSelectedCards();
-
-  const cards = difficultOnly
-    ? allCards.filter(function(card) {
-        const key = flashcards.indexOf(card);
-        return sessionRatings[key] === "learning";
-      })
-    : allCards;
+  const cards = getPracticeCards();
 
   const cardElement = document.getElementById("study-card");
   const counter = document.getElementById("card-counter");
@@ -272,9 +265,6 @@ function setPracticeMode(onlyDifficult) {
     (currentCardIndex + 1) + " / " + cards.length;
 }
 
-  if (currentCardIndex >= cards.length) {
-    currentCardIndex = 0;
-  }
     function getSelectedCards() {
       const selectedFolder =
         document.getElementById("folder-select").value;
@@ -343,32 +333,8 @@ function setPracticeMode(onlyDifficult) {
       showStudyCard();
     }
 
-    function showStudyCard() {
-      const cards = getSelectedCards();
-      const cardElement = document.getElementById("study-card");
-      const counter = document.getElementById("card-counter");
-
-      if (cards.length === 0) {
-        cardElement.textContent = "Add some words to start!";
-        counter.textContent = "0 / 0";
-        return;
-      }
-
-      if (currentCardIndex >= cards.length) {
-        currentCardIndex = 0;
-      }
-
-      const card = cards[currentCardIndex];
-
-      cardElement.textContent =
-        isFlipped ? card.czech : card.english;
-
-      counter.textContent =
-        (currentCardIndex + 1) + " / " + cards.length;
-    }
-
     function flipCard() {
-      if (getSelectedCards().length === 0) return;
+      if (getPracticeCards().length === 0) return;
 
       isFlipped = !isFlipped;
       showStudyCard();
